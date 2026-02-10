@@ -129,14 +129,6 @@ class ServiceItem extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                   4.verticalSpace,
-                  // Size/Duration
-                  Text(
-                    service.duration,
-                    style: TextStyle(
-                      fontSize: 11.sp,
-                      color: Colors.black54,
-                    ),
-                  ),
                   8.verticalSpace,
                   // Price and Add Button
                   Row(

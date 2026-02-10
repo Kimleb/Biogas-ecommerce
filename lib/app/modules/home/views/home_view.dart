@@ -62,6 +62,13 @@ class HomeView extends GetView<HomeController> {
                       ),
                       Row(
                         children: [
+                          // Admin button - show for all users
+                          IconButton(
+                            onPressed: () => controller.goToAdminDashboard(),
+                            icon: Icon(Icons.admin_panel_settings, size: 24.sp),
+                            color: Color(0xFFFF8C00),
+                          ),
+                          8.horizontalSpace,
                           IconButton(
                             onPressed: () {},
                             icon: Icon(Icons.search, size: 24.sp),
@@ -266,22 +273,47 @@ class HomeView extends GetView<HomeController> {
                 ),
               ),
               // Products Grid
-              SliverPadding(
-                padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 24.h),
-                sliver: SliverGrid(
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 12.w,
-                    mainAxisSpacing: 12.h,
-                    childAspectRatio: 0.75,
-                  ),
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) => ProductItem(
-                      product: controller.services[index],
-                    ),
-                    childCount: controller.services.length,
-                  ),
-                ),
+              GetBuilder<HomeController>(
+                builder: (ctrl) {
+                  return SliverPadding(
+                    padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 24.h),
+                    sliver: ctrl.services.isEmpty
+                        ? SliverToBoxAdapter(
+                            child: Center(
+                              child: Padding(
+                                padding: EdgeInsets.all(40.h),
+                                child: Column(
+                                  children: [
+                                    CircularProgressIndicator(
+                                        color: Color(0xFFFF8C00)),
+                                    16.verticalSpace,
+                                    Text(
+                                      'Loading services...',
+                                      style: TextStyle(
+                                          fontSize: 14.sp, color: Colors.grey),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          )
+                        : SliverGrid(
+                            gridDelegate:
+                                SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              crossAxisSpacing: 12.w,
+                              mainAxisSpacing: 12.h,
+                              childAspectRatio: 0.75,
+                            ),
+                            delegate: SliverChildBuilderDelegate(
+                              (context, index) => ProductItem(
+                                product: ctrl.services[index],
+                              ),
+                              childCount: ctrl.services.length,
+                            ),
+                          ),
+                  );
+                },
               ),
             ],
           ),

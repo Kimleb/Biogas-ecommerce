@@ -5,7 +5,7 @@ import '../../../data/models/service_model.dart';
 import '../../../data/models/booking_model.dart';
 
 class AdminController extends GetxController {
-  final DatabaseService _databaseService = Get.find<DatabaseService>();
+  late final DatabaseService _databaseService;
 
   final services = <ServiceModel>[].obs;
   final bookings = <BookingModel>[].obs;
@@ -23,6 +23,8 @@ class AdminController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    // Initialize DatabaseService after onInit
+    _databaseService = Get.find<DatabaseService>();
     loadData();
   }
 
@@ -91,7 +93,7 @@ class AdminController extends GetxController {
         description: descriptionController.text,
         price: double.parse(priceController.text),
         duration: durationController.text,
-        image: 'assets/images/service_placeholder.png',
+        image: '', // Remove placeholder image for now
         technician: technicianController.text,
         rating: 0.0,
       );

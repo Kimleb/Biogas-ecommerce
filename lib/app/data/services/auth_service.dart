@@ -1,7 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../models/user_model.dart';
 import '../dummy_data.dart';
 
@@ -10,6 +12,7 @@ class AuthService extends GetxService {
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseDatabase _database = FirebaseDatabase.instance;
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   final Rx<User?> _firebaseUser = Rx<User?>(null);
   final Rx<UserModel?> _currentUser = Rx<UserModel?>(null);
@@ -55,7 +58,7 @@ class AuthService extends GetxService {
   }
 
   Future<bool> signUpWithEmail({
-    required String email,
+    required String emailAddress,
     required String password,
     required String name,
     required String phone,
@@ -63,7 +66,7 @@ class AuthService extends GetxService {
   }) async {
     try {
       final credential = await _auth.createUserWithEmailAndPassword(
-        email: email,
+        email: emailAddress,
         password: password,
       );
 
@@ -71,7 +74,7 @@ class AuthService extends GetxService {
         final user = UserModel(
           id: credential.user!.uid,
           name: name,
-          email: email,
+          email: emailAddress,
           phone: phone,
           role: role,
         );
@@ -113,12 +116,12 @@ class AuthService extends GetxService {
   }
 
   Future<bool> signInWithEmail({
-    required String email,
+    required String emailAddress,
     required String password,
   }) async {
     try {
       final credential = await _auth.signInWithEmailAndPassword(
-        email: email,
+        email: emailAddress,
         password: password,
       );
 
@@ -154,6 +157,12 @@ class AuthService extends GetxService {
 
   Future<void> signOut() async {
     try {
+      // Sign out from Google if signed in
+      if (_googleSignIn.currentUser != null) {
+        await _googleSignIn.signOut();
+      }
+
+      // Sign out from Firebase
       await _auth.signOut();
       _currentUser.value = null;
       Get.snackbar(
@@ -176,10 +185,87 @@ class AuthService extends GetxService {
 
   Future<bool> signInWithGoogle() async {
     try {
+      // Trigger the Google Authentication flow
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+
+      if (googleUser == null) {
+        // User cancelled the sign-in
+        Get.snackbar(
+          'Cancelled',
+          'Google Sign-In was cancelled',
+          backgroundColor: Colors.orange,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        return false;
+      }
+
+      // Obtain the auth details from the request
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+
+      // Check if we got the tokens
+      if (googleAuth.accessToken == null && googleAuth.idToken == null) {
+        throw Exception('Failed to obtain Google authentication tokens');
+      }
+
+      // Create a new credential
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      // Sign in to Firebase with the Google credential
+      final UserCredential userCredential =
+          await _auth.signInWithCredential(credential);
+
+      if (userCredential.user != null) {
+        // Check if user exists in database
+        await _loadUserData(userCredential.user!.uid);
+
+        // If user doesn't exist in database, create new user record
+        if (_currentUser.value == null) {
+          final user = UserModel(
+            id: userCredential.user!.uid,
+            name: userCredential.user!.displayName ?? 'Google User',
+            email: userCredential.user!.email ?? '',
+            phone: userCredential.user!.phoneNumber ?? '',
+            role: 'customer',
+          );
+
+          await _database
+              .ref()
+              .child('users')
+              .child(userCredential.user!.uid)
+              .set(user.toJson());
+          _currentUser.value = user;
+          DummyData.setCurrentUser(user);
+        }
+
+        Get.snackbar(
+          'Success! 🎉',
+          'Signed in with Google successfully',
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        return true;
+      }
+      return false;
+    } on PlatformException catch (e) {
+      String message = 'Google Sign-In failed';
+      if (e.code == 'sign_in_failed') {
+        message = 'Google Sign-In failed. Please try again.';
+      } else if (e.code == 'network_error') {
+        message = 'Network error. Please check your internet connection.';
+      } else if (e.code == 'sign_in_canceled') {
+        message = 'Sign-In was cancelled.';
+      }
+
       Get.snackbar(
-        'Coming Soon',
-        'Google Sign-In will be available soon.',
-        backgroundColor: Colors.blue,
+        'Error',
+        message,
+        backgroundColor: Colors.red,
         colorText: Colors.white,
         snackPosition: SnackPosition.BOTTOM,
       );
@@ -187,7 +273,7 @@ class AuthService extends GetxService {
     } catch (e) {
       Get.snackbar(
         'Error',
-        'Google Sign-In failed',
+        'Google Sign-In failed: ${e.toString()}',
         backgroundColor: Colors.red,
         colorText: Colors.white,
         snackPosition: SnackPosition.BOTTOM,

@@ -1,9 +1,9 @@
 import 'package:get/get.dart';
 
 import '../../../data/services/database_service.dart';
-import '../controllers/home_controller.dart';
+import '../controllers/admin_controller.dart';
 
-class HomeBinding extends Bindings {
+class AdminBinding extends Bindings {
   @override
   void dependencies() {
     // Ensure DatabaseService is available
@@ -11,8 +11,8 @@ class HomeBinding extends Bindings {
       Get.put<DatabaseService>(DatabaseService());
     }
 
-    Get.lazyPut<HomeController>(
-      () => HomeController(),
+    Get.lazyPut<AdminController>(
+      () => AdminController(),
     );
   }
 }
