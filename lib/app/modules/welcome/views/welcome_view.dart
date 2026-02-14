@@ -19,7 +19,7 @@ class WelcomeView extends GetView<WelcomeController> {
         children: [
           Positioned.fill(
             child: Image.asset(
-              Constants.lotus,
+              Constants.background,
               fit: BoxFit.fill,
             ),
           ),
@@ -34,8 +34,8 @@ class WelcomeView extends GetView<WelcomeController> {
                   backgroundColor: theme.primaryColorDark,
                   child: Image.asset(
                     Constants.logo,
-                    width: 40.33.w,
-                    height: 33.40.h,
+                    width: 100.33.w,
+                    height: 80.40.h,
                   ),
                 ).animate().fade().slideY(
                       duration: 300.ms,
@@ -75,9 +75,8 @@ class WelcomeView extends GetView<WelcomeController> {
                     icon: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.eco, color: Colors.white, size: 20.sp),
-                        12.horizontalSpace,
-                        Text('Get Started'),
+                        Icon(Icons.navigate_next, color: Colors.white, size: 20.sp),
+                        12.horizontalSpace
                       ],
                     ),
                   ).animate().fade().slideY(

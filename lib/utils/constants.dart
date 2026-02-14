@@ -29,7 +29,7 @@ class Constants {
   static const cheese = 'assets/vectors/cheese.svg';
   static const meat = 'assets/vectors/meat.svg';
 
-  static const background = 'assets/images/background.png';
+  static const background = 'assets/images/bg.png';
   static const backgroundDark = 'assets/images/background_dark.png';
   // Google branding assets
   static const googleLogo = 'assets/images/google_logo.svg';
@@ -38,7 +38,6 @@ class Constants {
   static const lotus = 'assets/images/lotus.png';
   static const matches = 'assets/images/matches.png';
   static const favourites = 'assets/images/favourites.png';
-
   // Biogas service images
   static const biogasRepairImg = 'assets/images/biogas_repair.svg';
   static const biogasSetupImg = 'assets/images/biogas_setup.svg';

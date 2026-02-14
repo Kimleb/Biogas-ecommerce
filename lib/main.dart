@@ -5,6 +5,7 @@ import 'package:firebase_core/firebase_core.dart';
 
 import 'app/data/local/my_shared_pref.dart';
 import 'app/data/services/auth_service.dart';
+import 'app/data/services/database_service.dart';
 import 'app/routes/app_pages.dart';
 import 'config/theme/my_theme.dart';
 import 'config/translations/localization_service.dart';
@@ -24,6 +25,7 @@ Future<void> main() async {
 
   // Initialize services
   await Get.putAsync(() async => AuthService());
+  Get.put(DatabaseService());
 
   runApp(
     ScreenUtilInit(

@@ -46,7 +46,7 @@ class AuthController extends GetxController {
 
     try {
       final success = await AuthService.to.signInWithEmail(
-        email: emailController.text.trim(),
+        emailAddress: emailController.text.trim(),
         password: passwordController.text,
       );
 
@@ -82,7 +82,7 @@ class AuthController extends GetxController {
 
     try {
       final success = await AuthService.to.signUpWithEmail(
-        email: emailController.text.trim(),
+        emailAddress: emailController.text.trim(),
         password: passwordController.text,
         name: nameController.text.trim(),
         phone: phoneController.text.trim(),

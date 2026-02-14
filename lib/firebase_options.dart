@@ -55,22 +55,6 @@ class DefaultFirebaseOptions {
     storageBucket: 'biogas-ecommerce.firebasestorage.app',
     iosBundleId: 'com.emad.beltaje.getxskeleton.getxSkeleton',
   );
-
-  static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'your-macos-api-key',
-    appId: 'your-macos-app-id',
-    messagingSenderId: 'your-sender-id',
-    projectId: 'your-project-id',
-    storageBucket: 'your-project-id.appspot.com',
-    iosBundleId: 'com.example.biogasTechnicianApp',
-  );
-
-  static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'your-windows-api-key',
-    appId: 'your-windows-app-id',
-    messagingSenderId: 'your-sender-id',
-    projectId: 'your-project-id',
-    authDomain: 'your-project-id.firebaseapp.com',
-    storageBucket: 'your-project-id.appspot.com',
-  );
 }
+
+ 
