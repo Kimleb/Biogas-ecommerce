@@ -88,9 +88,9 @@ class CartView extends GetView<CartController> {
                           service: service,
                           quantity: productData['quantity'] as int? ?? 0,
                           onIncrease: () =>
-                              controller.onIncreasePressed(service.id),
+                              controller.onIncreasePressed(service.id as int),
                           onDecrease: () =>
-                              controller.onDecreasePressed(service.id),
+                              controller.onDecreasePressed(service.id as int),
                         ).animate(delay: (100 * index).ms).fade().slideX(
                               duration: 300.ms,
                               begin: -1,

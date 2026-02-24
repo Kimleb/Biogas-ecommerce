@@ -9,7 +9,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.biogas_technician_app"
+    namespace = "com.biogas.services"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 

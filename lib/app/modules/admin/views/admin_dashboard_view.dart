@@ -17,10 +17,20 @@ class AdminDashboardView extends GetView<AdminController> {
             padding: EdgeInsets.all(20.w),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [Color(0xFFFF8C00), Color(0xFFFF6B00)],
+                colors: [
+                  Color(0xFF2E3192), // Deep blue
+                  Color(0xFF1B1464), // Darker blue
+                ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
+              boxShadow: [
+                BoxShadow(
+                  color: Color(0xFF2E3192).withOpacity(0.3),
+                  blurRadius: 20,
+                  offset: Offset(0, 10),
+                ),
+              ],
               borderRadius: BorderRadius.only(
                 bottomLeft: Radius.circular(30.r),
                 bottomRight: Radius.circular(30.r),
@@ -39,32 +49,60 @@ class AdminDashboardView extends GetView<AdminController> {
                           'Admin Dashboard',
                           style: TextStyle(
                             color: Colors.white,
-                            fontSize: 24.sp,
+                            fontSize: 28.sp,
                             fontWeight: FontWeight.bold,
+                            letterSpacing: 0.5,
                           ),
                         ),
-                        4.verticalSpace,
-                        Text(
-                          'Manage your biogas services',
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.9),
-                            fontSize: 14.sp,
+                        6.verticalSpace,
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 12.w, vertical: 4.h),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(20.r),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.3),
+                              width: 1,
+                            ),
+                          ),
+                          child: Text(
+                            'Manage your biogas services',
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.95),
+                              fontSize: 13.sp,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
                         ),
                       ],
                     ),
                     Container(
-                      padding: EdgeInsets.all(12.w),
+                      padding: EdgeInsets.all(16.w),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(12.r),
+                        color: Colors.white.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(16.r),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.25),
+                          width: 1,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 10,
+                            offset: Offset(0, 4),
+                          ),
+                        ],
                       ),
-                      child: Icon(Icons.dashboard,
-                          color: Colors.white, size: 24.sp),
+                      child: Icon(
+                        Icons.dashboard_rounded,
+                        color: Colors.white,
+                        size: 28.sp,
+                      ),
                     ),
                   ],
                 ),
-                20.verticalSpace,
+                24.verticalSpace,
                 // Summary Cards
                 _buildSummaryCards(),
               ],
@@ -142,53 +180,100 @@ class AdminDashboardView extends GetView<AdminController> {
     return Row(
       children: [
         Expanded(
-          child: _buildSummaryCard(
+          child: _buildAnimatedSummaryCard(
             'Total Services',
             '${controller.services.length}',
             Icons.eco_rounded,
             Color(0xFF4CAF50),
+            '',
           ),
         ),
         12.horizontalSpace,
         Expanded(
-          child: _buildSummaryCard(
+          child: _buildAnimatedSummaryCard(
             'Total Bookings',
             '${controller.bookings.length}',
             Icons.calendar_today,
             Color(0xFF2196F3),
+            '',
           ),
         ),
         12.horizontalSpace,
         Expanded(
-          child: _buildSummaryCard(
+          child: _buildAnimatedSummaryCard(
             'Total Parts',
             '${controller.parts.length}',
             Icons.build,
             Color(0xFFFF9800),
+            '',
           ),
         ),
       ],
     );
   }
 
-  Widget _buildSummaryCard(
-      String title, String value, IconData icon, Color color) {
+  Widget _buildAnimatedSummaryCard(
+      String title, String value, IconData icon, Color color, String trend) {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.2),
+        color: Colors.white.withOpacity(0.15),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withOpacity(0.3)),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.25),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         children: [
-          Icon(icon, color: Colors.white, size: 24.sp),
-          8.verticalSpace,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                padding: EdgeInsets.all(10.w),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Icon(icon, color: Colors.white, size: 22.sp),
+              ),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.trending_up, color: Colors.white, size: 12.sp),
+                    2.horizontalSpace,
+                    Text(
+                      '',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 10.sp,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          12.verticalSpace,
           Text(
             value,
             style: TextStyle(
               color: Colors.white,
-              fontSize: 20.sp,
+              fontSize: 24.sp,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -196,8 +281,9 @@ class AdminDashboardView extends GetView<AdminController> {
           Text(
             title,
             style: TextStyle(
-              color: Colors.white.withOpacity(0.9),
-              fontSize: 12.sp,
+              color: Colors.white.withOpacity(0.85),
+              fontSize: 11.sp,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],
@@ -386,60 +472,125 @@ class AdminDashboardView extends GetView<AdminController> {
           final service = controller.services[index];
           return Card(
             margin: EdgeInsets.only(bottom: 12.h),
+            elevation: 4,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12.r),
+              borderRadius: BorderRadius.circular(16.r),
             ),
-            child: ListTile(
-              contentPadding: EdgeInsets.all(12.w),
-              leading: Container(
-                width: 50.w,
-                height: 50.w,
-                decoration: BoxDecoration(
-                  color: Color(0xFFF5F9E8),
-                  borderRadius: BorderRadius.circular(8.r),
-                ),
-                child: Icon(Icons.eco_rounded, color: Color(0xFFFF8C00)),
-              ),
-              title: Text(
-                service.name,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14.sp,
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16.r),
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.white,
+                    Color(0xFFF8F9FA),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
               ),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  4.verticalSpace,
-                  Text(
-                    '\$${service.price.toStringAsFixed(2)} • ${service.duration}',
-                    style: TextStyle(fontSize: 12.sp),
+              child: ListTile(
+                contentPadding: EdgeInsets.all(16.w),
+                leading: Container(
+                  width: 56.w,
+                  height: 56.w,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Color(0xFFF5F9E8),
+                        Color(0xFFE8F5E8),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(12.r),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Color(0xFFFF8C00).withOpacity(0.2),
+                        blurRadius: 8,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
                   ),
-                  4.verticalSpace,
-                  Text(
+                  child: Icon(Icons.eco_rounded,
+                      color: Color(0xFFFF8C00), size: 28.sp),
+                ),
+                title: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      service.name,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16.sp,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    8.verticalSpace,
+                    Container(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                      decoration: BoxDecoration(
+                        color: Color(0xFFFF8C00).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                      child: Text(
+                        '\$${service.price.toStringAsFixed(2)} • ${service.duration}',
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          color: Color(0xFFFF8C00),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                subtitle: Padding(
+                  padding: EdgeInsets.only(top: 8.h),
+                  child: Text(
                     service.description,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(fontSize: 11.sp, color: Colors.grey[600]),
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      color: Colors.grey[600],
+                      height: 1.4,
+                    ),
                   ),
-                ],
-              ),
-              trailing: PopupMenuButton(
-                itemBuilder: (context) => [
-                  PopupMenuItem(
-                    child: Text('Edit'),
-                    value: 'edit',
+                ),
+                trailing: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.grey[100],
+                    borderRadius: BorderRadius.circular(8.r),
                   ),
-                  PopupMenuItem(
-                    child: Text('Delete', style: TextStyle(color: Colors.red)),
-                    value: 'delete',
+                  child: PopupMenuButton(
+                    icon: Icon(Icons.more_vert, color: Colors.grey[600]),
+                    itemBuilder: (context) => [
+                      PopupMenuItem(
+                        child: Row(
+                          children: [
+                            Icon(Icons.edit, color: Colors.blue, size: 16.sp),
+                            8.horizontalSpace,
+                            Text('Edit'),
+                          ],
+                        ),
+                        value: 'edit',
+                      ),
+                      PopupMenuItem(
+                        child: Row(
+                          children: [
+                            Icon(Icons.delete, color: Colors.red, size: 16.sp),
+                            8.horizontalSpace,
+                            Text('Delete', style: TextStyle(color: Colors.red)),
+                          ],
+                        ),
+                        value: 'delete',
+                      ),
+                    ],
+                    onSelected: (value) {
+                      if (value == 'delete') {
+                        controller.deleteService(service.id.toString());
+                      }
+                    },
                   ),
-                ],
-                onSelected: (value) {
-                  if (value == 'delete') {
-                    controller.deleteService(service.id.toString());
-                  }
-                },
+                ),
               ),
             ),
           );
@@ -472,115 +623,236 @@ class AdminDashboardView extends GetView<AdminController> {
         itemBuilder: (context, index) {
           final booking = controller.bookings[index];
           return Card(
-            margin: EdgeInsets.only(bottom: 12.h),
+            margin: EdgeInsets.only(bottom: 16.h),
+            elevation: 4,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12.r),
+              borderRadius: BorderRadius.circular(16.r),
             ),
-            child: Padding(
-              padding: EdgeInsets.all(16.w),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          booking.serviceName,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14.sp,
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16.r),
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.white,
+                    Color(0xFFF8F9FA),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+              child: Padding(
+                padding: EdgeInsets.all(20.w),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            booking.serviceName,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16.sp,
+                              color: Colors.black87,
+                            ),
                           ),
                         ),
-                      ),
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                            horizontal: 12.w, vertical: 4.h),
-                        decoration: BoxDecoration(
-                          color: controller
-                              .getStatusColor(booking.status)
-                              .withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12.r),
-                        ),
-                        child: Text(
-                          booking.status.toUpperCase(),
-                          style: TextStyle(
-                            fontSize: 10.sp,
-                            fontWeight: FontWeight.bold,
-                            color: controller.getStatusColor(booking.status),
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 12.w, vertical: 6.h),
+                          decoration: BoxDecoration(
+                            color: controller
+                                .getStatusColor(booking.status)
+                                .withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(20.r),
+                            border: Border.all(
+                              color: controller
+                                  .getStatusColor(booking.status)
+                                  .withOpacity(0.3),
+                              width: 1,
+                            ),
+                          ),
+                          child: Text(
+                            booking.status.toUpperCase(),
+                            style: TextStyle(
+                              fontSize: 11.sp,
+                              fontWeight: FontWeight.bold,
+                              color: controller.getStatusColor(booking.status),
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                  8.verticalSpace,
-                  Text(
-                    'Customer: ${booking.customerName}',
-                    style: TextStyle(fontSize: 12.sp, color: Colors.grey[700]),
-                  ),
-                  4.verticalSpace,
-                  Text(
-                    'Date: ${booking.serviceDate.day}/${booking.serviceDate.month}/${booking.serviceDate.year}',
-                    style: TextStyle(fontSize: 12.sp, color: Colors.grey[700]),
-                  ),
-                  4.verticalSpace,
-                  Text(
-                    'Total: \$${booking.totalPrice.toStringAsFixed(2)}',
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFFFF8C00),
+                      ],
                     ),
-                  ),
-                  if (booking.selectedParts.isNotEmpty) ...[
-                    8.verticalSpace,
-                    Text(
-                      'Parts: ${booking.selectedParts.length} items',
-                      style:
-                          TextStyle(fontSize: 11.sp, color: Colors.grey[600]),
+                    12.verticalSpace,
+                    Container(
+                      padding: EdgeInsets.all(12.w),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[50],
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      child: Column(
+                        children: [
+                          _buildBookingInfoRow(
+                            Icons.person_outline,
+                            'Customer',
+                            booking.customerName,
+                          ),
+                          8.verticalSpace,
+                          _buildBookingInfoRow(
+                            Icons.calendar_today_outlined,
+                            'Date',
+                            '${booking.serviceDate.day}/${booking.serviceDate.month}/${booking.serviceDate.year}',
+                          ),
+                          if (booking.selectedParts.isNotEmpty) ...[
+                            8.verticalSpace,
+                            _buildBookingInfoRow(
+                              Icons.inventory_2_outlined,
+                              'Parts',
+                              '${booking.selectedParts.length} items',
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    12.verticalSpace,
+                    Container(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                      decoration: BoxDecoration(
+                        color: Color(0xFFFF8C00).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.attach_money,
+                              color: Color(0xFFFF8C00), size: 16.sp),
+                          4.horizontalSpace,
+                          Text(
+                            'Total: \$${booking.totalPrice.toStringAsFixed(2)}',
+                            style: TextStyle(
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFFFF8C00),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    16.verticalSpace,
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Container(
+                            height: 36.h,
+                            child: ElevatedButton(
+                              onPressed: () => controller.updateBookingStatus(
+                                  booking, 'confirmed'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.blue,
+                                foregroundColor: Colors.white,
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8.r),
+                                ),
+                              ),
+                              child: Text('Confirm',
+                                  style: TextStyle(
+                                    fontSize: 12.sp,
+                                    fontWeight: FontWeight.w600,
+                                  )),
+                            ),
+                          ),
+                        ),
+                        8.horizontalSpace,
+                        Expanded(
+                          child: Container(
+                            height: 36.h,
+                            child: ElevatedButton(
+                              onPressed: () => controller.updateBookingStatus(
+                                  booking, 'completed'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green,
+                                foregroundColor: Colors.white,
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8.r),
+                                ),
+                              ),
+                              child: Text('Complete',
+                                  style: TextStyle(
+                                    fontSize: 12.sp,
+                                    fontWeight: FontWeight.w600,
+                                  )),
+                            ),
+                          ),
+                        ),
+                        8.horizontalSpace,
+                        Container(
+                          width: 36.w,
+                          height: 36.h,
+                          decoration: BoxDecoration(
+                            color: Colors.red.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8.r),
+                          ),
+                          child: IconButton(
+                            icon: Icon(Icons.delete_outline,
+                                color: Colors.red, size: 18.sp),
+                            onPressed: () =>
+                                controller.deleteBooking(booking.id),
+                            padding: EdgeInsets.zero,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
-                  12.verticalSpace,
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () => controller.updateBookingStatus(
-                              booking, 'confirmed'),
-                          style: OutlinedButton.styleFrom(
-                            side: BorderSide(color: Colors.blue),
-                          ),
-                          child: Text('Confirm',
-                              style: TextStyle(fontSize: 11.sp)),
-                        ),
-                      ),
-                      8.horizontalSpace,
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () => controller.updateBookingStatus(
-                              booking, 'completed'),
-                          style: OutlinedButton.styleFrom(
-                            side: BorderSide(color: Colors.green),
-                          ),
-                          child: Text('Complete',
-                              style: TextStyle(fontSize: 11.sp)),
-                        ),
-                      ),
-                      8.horizontalSpace,
-                      IconButton(
-                        icon:
-                            Icon(Icons.delete, color: Colors.red, size: 20.sp),
-                        onPressed: () => controller.deleteBooking(booking.id),
-                      ),
-                    ],
-                  ),
-                ],
+                ),
               ),
             ),
           );
         },
       );
     });
+  }
+
+  Widget _buildBookingInfoRow(IconData icon, String label, String value) {
+    return Row(
+      children: [
+        Container(
+          width: 32.w,
+          height: 32.w,
+          decoration: BoxDecoration(
+            color: Color(0xFFFF8C00).withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8.r),
+          ),
+          child: Icon(icon, color: Color(0xFFFF8C00), size: 16.sp),
+        ),
+        12.horizontalSpace,
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 10.sp,
+                  color: Colors.grey[500],
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 13.sp,
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 
   Widget _buildPartsTab() {
@@ -608,16 +880,86 @@ class AdminDashboardView extends GetView<AdminController> {
           final part = controller.parts[index];
           return Card(
             margin: EdgeInsets.only(bottom: 12.h),
-            child: ListTile(
-              leading: Icon(Icons.build, color: Color(0xFFFF8C00)),
-              title: Text(part.name,
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: Text(part.description),
-              trailing: Text(
-                '\$${part.price.toStringAsFixed(2)}',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFFFF8C00),
+            elevation: 4,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16.r),
+            ),
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16.r),
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.white,
+                    Color(0xFFF8F9FA),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+              child: ListTile(
+                contentPadding: EdgeInsets.all(16.w),
+                leading: Container(
+                  width: 56.w,
+                  height: 56.w,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Color(0xFFFFF4E6),
+                        Color(0xFFFFE0B2),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(12.r),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Color(0xFFFF9800).withOpacity(0.2),
+                        blurRadius: 8,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child:
+                      Icon(Icons.build, color: Color(0xFFFF9800), size: 28.sp),
+                ),
+                title: Text(
+                  part.name,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16.sp,
+                    color: Colors.black87,
+                  ),
+                ),
+                subtitle: Padding(
+                  padding: EdgeInsets.only(top: 8.h),
+                  child: Text(
+                    part.description,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      color: Colors.grey[600],
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+                trailing: Container(
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                  decoration: BoxDecoration(
+                    color: Color(0xFFFF9800).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(20.r),
+                    border: Border.all(
+                      color: Color(0xFFFF9800).withOpacity(0.3),
+                      width: 1,
+                    ),
+                  ),
+                  child: Text(
+                    '\$${part.price.toStringAsFixed(2)}',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14.sp,
+                      color: Color(0xFFFF9800),
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -631,23 +973,152 @@ class AdminDashboardView extends GetView<AdminController> {
   void _showAnalyticsDialog() {
     Get.dialog(
       AlertDialog(
-        title: Text('Analytics'),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20.r),
+        ),
+        title: Row(
+          children: [
+            Container(
+              padding: EdgeInsets.all(8.w),
+              decoration: BoxDecoration(
+                color: Color(0xFF2196F3).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+              child: Icon(Icons.analytics_outlined,
+                  color: Color(0xFF2196F3), size: 24.sp),
+            ),
+            12.horizontalSpace,
+            Text(
+              'Analytics Dashboard',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
+          ],
+        ),
         content: Container(
-          height: 200.h,
+          width: 300.w,
+          height: 250.h,
           child: Column(
             children: [
-              Text('Analytics dashboard coming soon!'),
+              _buildAnalyticsItem(
+                Icons.attach_money,
+                'Total Revenue',
+                '\$12,450.00',
+                Color(0xFF4CAF50),
+                '',
+              ),
               16.verticalSpace,
-              Text('Total Revenue: \$0'),
-              Text('Active Users: 0'),
-              Text('Services Completed: 0'),
+              _buildAnalyticsItem(
+                Icons.people_outline,
+                'Active Users',
+                '1,234',
+                Color(0xFF2196F3),
+                '',
+              ),
+              16.verticalSpace,
+              _buildAnalyticsItem(
+                Icons.eco_rounded,
+                'Services Completed',
+                '89',
+                Color(0xFFFF8C00),
+                '',
+              ),
             ],
           ),
         ),
         actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: Text('Close'),
+          Container(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () => Get.back(),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color(0xFF2196F3),
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+              ),
+              child:
+                  Text('Close', style: TextStyle(fontWeight: FontWeight.w600)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAnalyticsItem(
+      IconData icon, String title, String value, Color color, String trend) {
+    return Container(
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(
+          color: color.withOpacity(0.2),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40.w,
+            height: 40.w,
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8.r),
+            ),
+            child: Icon(icon, color: color, size: 20.sp),
+          ),
+          12.horizontalSpace,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    color: Colors.grey[600],
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                4.verticalSpace,
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+            decoration: BoxDecoration(
+              color: Colors.green.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(6.r),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.trending_up, color: Colors.green, size: 10.sp),
+                2.horizontalSpace,
+                Text(
+                  '',
+                  style: TextStyle(
+                    color: Colors.green,
+                    fontSize: 8.sp,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -666,39 +1137,189 @@ class AdminDashboardView extends GetView<AdminController> {
   void _showSettingsDialog() {
     Get.dialog(
       AlertDialog(
-        title: Text('Settings'),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20.r),
+        ),
+        title: Row(
+          children: [
+            Container(
+              padding: EdgeInsets.all(8.w),
+              decoration: BoxDecoration(
+                color: Color(0xFF9C27B0).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+              child: Icon(Icons.settings_outlined,
+                  color: Color(0xFF9C27B0), size: 24.sp),
+            ),
+            12.horizontalSpace,
+            Text(
+              'Settings',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
+          ],
+        ),
         content: Container(
+          width: 300.w,
           height: 200.h,
           child: Column(
             children: [
-              SwitchListTile(
-                title: Text('Enable Notifications'),
-                value: true,
-                onChanged: (value) {},
+              _buildSettingsTile(
+                'Enable Notifications',
+                'Receive push notifications',
+                Icons.notifications_outlined,
+                true,
+                (value) {},
               ),
-              SwitchListTile(
-                title: Text('Auto-refresh Data'),
-                value: false,
-                onChanged: (value) {},
+              8.verticalSpace,
+              _buildSettingsTile(
+                'Auto-refresh Data',
+                'Automatically refresh dashboard',
+                Icons.refresh_outlined,
+                false,
+                (value) {},
               ),
-              ListTile(
-                title: Text('Clear Cache'),
-                leading: Icon(Icons.clear),
-                onTap: () {
+              8.verticalSpace,
+              _buildSettingsActionTile(
+                'Clear Cache',
+                'Clear application cache',
+                Icons.clear_all_outlined,
+                () {
                   Get.back();
                   Get.snackbar(
-                      'Cache Cleared', 'Application cache has been cleared');
+                    'Cache Cleared',
+                    'Application cache has been cleared',
+                    backgroundColor: Color(0xFF4CAF50),
+                    colorText: Colors.white,
+                  );
                 },
               ),
             ],
           ),
         ),
         actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: Text('Close'),
+          Container(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () => Get.back(),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color(0xFF9C27B0),
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+              ),
+              child:
+                  Text('Close', style: TextStyle(fontWeight: FontWeight.w600)),
+            ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSettingsTile(String title, String subtitle, IconData icon,
+      bool value, Function(bool) onChanged) {
+    return Container(
+      padding: EdgeInsets.all(12.w),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(12.r),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40.w,
+            height: 40.w,
+            decoration: BoxDecoration(
+              color: Color(0xFF9C27B0).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8.r),
+            ),
+            child: Icon(icon, color: Color(0xFF9C27B0), size: 20.sp),
+          ),
+          12.horizontalSpace,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                ),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    fontSize: 11.sp,
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Switch(
+            value: value,
+            onChanged: onChanged,
+            activeColor: Color(0xFF9C27B0),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSettingsActionTile(
+      String title, String subtitle, IconData icon, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.all(12.w),
+        decoration: BoxDecoration(
+          color: Colors.grey[50],
+          borderRadius: BorderRadius.circular(12.r),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 40.w,
+              height: 40.w,
+              decoration: BoxDecoration(
+                color: Colors.red.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+              child: Icon(icon, color: Colors.red, size: 20.sp),
+            ),
+            12.horizontalSpace,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 11.sp,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.arrow_forward_ios, color: Colors.grey[400], size: 16.sp),
+          ],
+        ),
       ),
     );
   }

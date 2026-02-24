@@ -1,34 +1,123 @@
 class ServiceModel {
-  int id;
-  String image;
-  String name;
-  String description;
-  String duration;
-  double price;
-  String technician;
-  double rating;
+  final String id;
+  final String name;
+  final String description;
+  final List<String> images;
+  final List<String> thumbnailImages;
+  final String duration;
+  final double price;
+  final String? technicianId;
+  final String? technicianName;
+  final double rating;
+  final String? categoryId;
+  final String? category;
+  final bool isActive;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
 
   ServiceModel({
     required this.id,
-    required this.image,
     required this.name,
     required this.description,
+    this.images = const [],
+    this.thumbnailImages = const [],
     required this.duration,
     required this.price,
-    required this.technician,
+    this.technicianId,
+    this.technicianName,
     this.rating = 0.0,
+    this.categoryId,
+    this.category,
+    this.isActive = true,
+    this.createdAt,
+    this.updatedAt,
   });
 
   factory ServiceModel.fromJson(Map<String, dynamic> json) {
     return ServiceModel(
-      id: json['id'] as int,
-      image: json['image'] as String? ?? '',
-      name: json['name'] as String? ?? '',
-      description: json['description'] as String? ?? '',
-      duration: json['duration'] as String? ?? '',
+      id: json['id'] ?? '',
+      name: json['name'] ?? '',
+      description: json['description'] ?? '',
+      images: List<String>.from(json['images'] ?? []),
+      thumbnailImages: List<String>.from(json['thumbnailImages'] ?? []),
+      duration: json['duration'] ?? '',
       price: (json['price'] as num?)?.toDouble() ?? 0.0,
-      technician: json['technician'] as String? ?? '',
+      technicianId: json['technicianId'],
+      technicianName: json['technicianName'],
       rating: (json['rating'] as num?)?.toDouble() ?? 0.0,
+      categoryId: json['categoryId'],
+      category: json['category'],
+      isActive: json['isActive'] ?? true,
+      createdAt:
+          json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
+      updatedAt:
+          json['updatedAt'] != null ? DateTime.parse(json['updatedAt']) : null,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'description': description,
+      'images': images,
+      'thumbnailImages': thumbnailImages,
+      'duration': duration,
+      'price': price,
+      'technicianId': technicianId,
+      'technicianName': technicianName,
+      'rating': rating,
+      'categoryId': categoryId,
+      'category': category,
+      'isActive': isActive,
+      'createdAt': createdAt?.toIso8601String(),
+      'updatedAt': updatedAt?.toIso8601String(),
+    };
+  }
+
+  ServiceModel copyWith({
+    String? id,
+    String? name,
+    String? description,
+    List<String>? images,
+    List<String>? thumbnailImages,
+    String? duration,
+    double? price,
+    String? technicianId,
+    String? technicianName,
+    double? rating,
+    String? categoryId,
+    String? category,
+    bool? isActive,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return ServiceModel(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      images: images ?? this.images,
+      thumbnailImages: thumbnailImages ?? this.thumbnailImages,
+      duration: duration ?? this.duration,
+      price: price ?? this.price,
+      technicianId: technicianId ?? this.technicianId,
+      technicianName: technicianName ?? this.technicianName,
+      rating: rating ?? this.rating,
+      categoryId: categoryId ?? this.categoryId,
+      category: category ?? this.category,
+      isActive: isActive ?? this.isActive,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  // Get the primary image (first image in the list)
+  String? get primaryImage => images.isNotEmpty ? images.first : null;
+
+  // Get the primary thumbnail
+  String? get primaryThumbnail =>
+      thumbnailImages.isNotEmpty ? thumbnailImages.first : null;
+
+  // Get technician name (for backward compatibility)
+  String? get technician => technicianName;
 }

@@ -71,11 +71,13 @@ class ProductDetailsView extends GetView<ProductDetailsController> {
                         ),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(16.r),
-                          child: controller.product.image.contains('.svg')
-                              ? SvgPicture.asset(controller.product.image,
+                          child: controller.product.images.contains('.svg')
+                              ? SvgPicture.asset(
+                                  controller.product.images.toString(),
                                   fit: BoxFit.contain)
-                              : controller.product.image.contains('assets')
-                                  ? Image.asset(controller.product.image,
+                              : controller.product.images.contains('assets')
+                                  ? Image.asset(
+                                      controller.product.images.toString(),
                                       fit: BoxFit.cover)
                                   : Image.network(
                                       UnsplashService.getServiceImage(controller
@@ -178,7 +180,7 @@ class ProductDetailsView extends GetView<ProductDetailsController> {
                   Icon(Icons.person, size: 16.sp, color: theme.hintColor),
                   8.horizontalSpace,
                   Text(
-                    controller.product.technician,
+                    controller.product.technician ?? 'No technician assigned',
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: theme.hintColor,
                     ),

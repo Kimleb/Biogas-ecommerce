@@ -6,6 +6,7 @@ import '../../../../utils/constants.dart';
 import '../../../components/dark_transition.dart';
 import '../../../components/product_item.dart';
 import '../controllers/home_controller.dart';
+import '../../payment/views/payment_view.dart';
 
 // Extension for horizontal space
 extension HorizontalSpace on double {
@@ -30,10 +31,27 @@ class HomeView extends GetView<HomeController> {
         body: SafeArea(
           child: CustomScrollView(
             slivers: [
-              // Simple Header
+              // Modern Header
               SliverToBoxAdapter(
-                child: Padding(
+                child: Container(
                   padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 16.h),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Color(0xFF4A90E2), // Light blue
+                        Color(0xFF357ABD), // Medium blue
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Color(0xFF4A90E2).withOpacity(0.2),
+                        blurRadius: 15,
+                        offset: Offset(0, 5),
+                      ),
+                    ],
+                  ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -43,18 +61,19 @@ class HomeView extends GetView<HomeController> {
                           Text(
                             'Your Biogas',
                             style: TextStyle(
-                              fontSize: 24.sp,
-                              fontWeight: FontWeight.w400,
-                              color: Colors.black87,
+                              fontSize: 26.sp,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
                               height: 1.2,
+                              letterSpacing: 0.2,
                             ),
                           ),
                           Text(
                             'Services, Simplified',
                             style: TextStyle(
-                              fontSize: 24.sp,
+                              fontSize: 22.sp,
                               fontWeight: FontWeight.bold,
-                              color: Colors.black,
+                              color: Colors.white.withOpacity(0.95),
                               height: 1.2,
                             ),
                           ),
@@ -63,24 +82,23 @@ class HomeView extends GetView<HomeController> {
                       Row(
                         children: [
                           // Admin button - show for all users
-                          IconButton(
-                            onPressed: () => controller.goToAdminDashboard(),
-                            icon: Icon(Icons.admin_panel_settings, size: 24.sp),
-                            color: Color(0xFFFF8C00),
-                          ),
-                          8.horizontalSpace,
-                          IconButton(
-                            onPressed: () {},
-                            icon: Icon(Icons.search, size: 24.sp),
-                            color: Colors.black87,
-                          ),
                           Stack(
                             children: [
-                              IconButton(
-                                onPressed: () {},
-                                icon: Icon(Icons.shopping_bag_outlined,
-                                    size: 24.sp),
-                                color: Colors.black87,
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(12.r),
+                                  border: Border.all(
+                                    color: Colors.white.withOpacity(0.3),
+                                    width: 1,
+                                  ),
+                                ),
+                                child: IconButton(
+                                  onPressed: () => Get.to(() => PaymentView()),
+                                  icon: Icon(Icons.shopping_bag_outlined,
+                                      size: 22.sp),
+                                  color: Colors.white,
+                                ),
                               ),
                               Positioned(
                                 right: 8,
@@ -89,8 +107,12 @@ class HomeView extends GetView<HomeController> {
                                   width: 8.w,
                                   height: 8.w,
                                   decoration: BoxDecoration(
-                                    color: Colors.red,
+                                    color: Color(0xFFFF6B6B),
                                     shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: Colors.white,
+                                      width: 1.5,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -102,149 +124,7 @@ class HomeView extends GetView<HomeController> {
                   ),
                 ),
               ),
-              // Promotional Banner
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20.w),
-                  child: Container(
-                    height: 150.h,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [Color(0xFFFFC837), Color(0xFFFFB800)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(20.r),
-                    ),
-                    child: Stack(
-                      children: [
-                        Positioned(
-                          right: 0,
-                          bottom: 0,
-                          top: 0,
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.only(
-                              topRight: Radius.circular(20.r),
-                              bottomRight: Radius.circular(20.r),
-                            ),
-                            child: Image.asset(
-                              Constants.avatar,
-                              fit: BoxFit.cover,
-                              width: 130.w,
-                            ),
-                          ),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 16.w, vertical: 12.h),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 8.w, vertical: 2.h),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.3),
-                                  borderRadius: BorderRadius.circular(10.r),
-                                ),
-                                child: Text(
-                                  'LIMITED TIME ONLY',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 7.sp,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                              4.verticalSpace,
-                              RichText(
-                                text: TextSpan(
-                                  children: [
-                                    TextSpan(
-                                      text: 'Save ',
-                                      style: TextStyle(
-                                        fontSize: 16.sp,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.black87,
-                                      ),
-                                    ),
-                                    TextSpan(
-                                      text: '15% ',
-                                      style: TextStyle(
-                                        fontSize: 20.sp,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black,
-                                        fontStyle: FontStyle.italic,
-                                      ),
-                                    ),
-                                    TextSpan(
-                                      text: 'OFF',
-                                      style: TextStyle(
-                                        fontSize: 12.sp,
-                                        fontWeight: FontWeight.w500,
-                                        color: Colors.black87,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              2.verticalSpace,
-                              Text(
-                                'Biogas Installation',
-                                style: TextStyle(
-                                  fontSize: 14.sp,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black,
-                                ),
-                              ),
-                              4.verticalSpace,
-                              Container(
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 12.w, vertical: 6.h),
-                                decoration: BoxDecoration(
-                                  color: Color(0xFFFF8C00),
-                                  borderRadius: BorderRadius.circular(18.r),
-                                ),
-                                child: Text(
-                                  'Book Now',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 10.sp,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              SliverToBoxAdapter(child: 20.verticalSpace),
-              // Category Pills
-              SliverToBoxAdapter(
-                child: SizedBox(
-                  height: 50.h,
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    padding: EdgeInsets.symmetric(horizontal: 20.w),
-                    children: [
-                      _buildCategoryPill('🔧 Installation', true),
-                      12.horizontalSpace,
-                      _buildCategoryPill('🛠️ Maintenance', false),
-                      12.horizontalSpace,
-                      _buildCategoryPill('🔍 Inspection', false),
-                      12.horizontalSpace,
-                      _buildCategoryPill('⚡ Repair', false),
-                    ],
-                  ),
-                ),
-              ),
-              SliverToBoxAdapter(child: 16.verticalSpace),
+
               // Section Header
               SliverToBoxAdapter(
                 child: Padding(

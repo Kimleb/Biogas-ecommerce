@@ -22,8 +22,9 @@ class DatabaseService extends GetxService {
         'description': service.description,
         'price': service.price,
         'duration': service.duration,
-        'image': service.image,
-        'technician': service.technician,
+        'image': service.primaryImage,
+        'technicianId': service.technicianId,
+        'technicianName': service.technicianName,
         'rating': service.rating,
         'createdAt': DateTime.now().millisecondsSinceEpoch,
       });
@@ -40,8 +41,9 @@ class DatabaseService extends GetxService {
         'description': service.description,
         'price': service.price,
         'duration': service.duration,
-        'image': service.image,
-        'technician': service.technician,
+        'image': service.primaryImage,
+        'technicianId': service.technicianId,
+        'technicianName': service.technicianName,
         'rating': service.rating,
         'updatedAt': DateTime.now().millisecondsSinceEpoch,
       });

@@ -27,6 +27,7 @@ import '../modules/splash/bindings/splash_binding.dart';
 import '../modules/splash/views/splash_view.dart';
 import '../modules/welcome/bindings/welcome_binding.dart';
 import '../modules/welcome/views/welcome_view.dart';
+import '../middlewares/admin_middleware.dart';
 
 part 'app_routes.dart';
 
@@ -109,6 +110,7 @@ class AppPages {
       name: _Paths.ADMIN_DASHBOARD,
       page: () => const AdminDashboardView(),
       binding: AdminBinding(),
+      middlewares: [AdminMiddleware()],
     ),
   ];
 }

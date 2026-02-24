@@ -32,7 +32,7 @@ class ServiceItem extends StatelessWidget {
       (p) => p['id'] == service.id,
       orElse: () => {
         'id': service.id,
-        'image': service.image,
+        'image': service.images,
         'name': service.name,
         'quantity': 0,
         'price': service.price,
@@ -72,7 +72,7 @@ class ServiceItem extends StatelessWidget {
       Color(0xFFF0F4FF), // Light blue
       Color(0xFFFFF0F5), // Light pink
     ];
-    final cardColor = cardColors[service.id % cardColors.length];
+    final cardColor = cardColors[service.id.hashCode % cardColors.length];
 
     return GestureDetector(
       onTap: () => Get.toNamed(Routes.PRODUCT_DETAILS, arguments: service),
@@ -86,22 +86,22 @@ class ServiceItem extends StatelessWidget {
           children: [
             // Service Image
             Container(
-              height: 120.h,
+              height: 140.h,
               padding: EdgeInsets.all(16.w),
               child: Center(
-                child: service.image.contains('.svg')
+                child: service.images.contains('.svg')
                     ? SvgPicture.asset(
-                        service.image,
+                        service.images as String,
                         fit: BoxFit.contain,
-                        width: 80.w,
-                        height: 80.h,
+                        width: 50.w,
+                        height: 50.h,
                       )
-                    : service.image.contains('assets')
+                    : service.images.contains('assets')
                         ? Image.asset(
-                            service.image,
+                            service.images as String,
                             fit: BoxFit.contain,
-                            width: 80.w,
-                            height: 80.h,
+                            width: 50.w,
+                            height: 50.h,
                           )
                         : Icon(
                             Icons.eco_rounded,

@@ -5,6 +5,8 @@ class Constants {
   static const homeIcon = 'assets/vectors/home.svg';
   static const categoryIcon = 'assets/vectors/category.svg';
   static const cartIcon = 'assets/vectors/cart.svg';
+  static const bookingIcon =
+      'assets/vectors/add.svg'; // Using add icon as booking placeholder
   static const calendarIcon = 'assets/vectors/calendar.svg';
   static const userIcon = 'assets/vectors/user.svg';
 

@@ -33,7 +33,6 @@ class CartController extends GetxController {
     products = productMaps
         .map((p) => ProductModel(
               id: p['id'],
-              image: p['image'],
               name: p['name'],
               quantity: p['quantity'] as int? ?? 0,
               price: p['price'],
@@ -45,15 +44,13 @@ class CartController extends GetxController {
     services = DummyHelper.services.where((service) {
       return productMaps.any((p) => p['id'] == service.id);
     }).map((service) {
-      var productData = productMaps.firstWhere((p) => p['id'] == service.id);
       return ServiceModel(
         id: service.id,
-        image: service.image,
         name: service.name,
         description: service.description,
         duration: service.duration,
         price: service.price,
-        technician: service.technician,
+        technicianName: service.technicianName,
         rating: service.rating,
       );
     }).toList();
