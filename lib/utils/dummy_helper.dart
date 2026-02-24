@@ -57,23 +57,21 @@ class DummyHelper {
   static List<ServiceModel> services = [
     // Emergency Services
     ServiceModel(
-      id: 1,
-      image: Constants.biogasRepairImg,
+      id: '1',
       name: 'Emergency System Repair',
       duration: '2-3 hours',
       price: 150.00,
-      technician: 'John Smith',
+      technicianName: 'John Smith',
       rating: 4.8,
       description:
           'Emergency repair service for biogas system malfunctions, gas leaks, and breakdowns. Available 24/7.',
     ),
     ServiceModel(
-      id: 2,
-      image: Constants.biogasRepairImg,
+      id: '2',
       name: 'Gas Leak Detection',
       duration: '1-2 hours',
       price: 120.00,
-      technician: 'Mike Davis',
+      technicianName: 'Mike Davis',
       rating: 4.9,
       description:
           'Professional gas leak detection and repair using advanced equipment for safety compliance.',
@@ -81,34 +79,31 @@ class DummyHelper {
 
     // Installation Services
     ServiceModel(
-      id: 3,
-      image: Constants.biogasSetupImg,
+      id: '3',
       name: 'Complete System Installation',
       duration: '1-2 days',
       price: 2500.00,
-      technician: 'Mike Johnson',
+      technicianName: 'Mike Johnson',
       rating: 4.7,
       description:
           'Full installation of biogas digestion system with all necessary components, piping, and safety checks.',
     ),
     ServiceModel(
-      id: 4,
-      image: Constants.biogasSetupImg,
+      id: '4',
       name: 'Residential Digester Setup',
       duration: '6-8 hours',
       price: 1800.00,
-      technician: 'Sarah Williams',
+      technicianName: 'Sarah Williams',
       rating: 4.6,
       description:
           'Installation of residential biogas digester with gas collection and storage system.',
     ),
     ServiceModel(
-      id: 5,
-      image: Constants.biogasSetupImg,
+      id: '5',
       name: 'Commercial System Setup',
       duration: '2-3 days',
       price: 4500.00,
-      technician: 'David Brown',
+      technicianName: 'David Brown',
       rating: 4.8,
       description:
           'Large-scale commercial biogas system installation for industrial applications.',
@@ -116,34 +111,31 @@ class DummyHelper {
 
     // Maintenance Services
     ServiceModel(
-      id: 6,
-      image: Constants.biogasMaintenanceImg,
+      id: '6',
       name: 'Annual Maintenance Check',
       duration: '4-6 hours',
       price: 200.00,
-      technician: 'Sarah Williams',
+      technicianName: 'Sarah Williams',
       rating: 4.9,
       description:
           'Comprehensive annual maintenance including inspection, cleaning, and performance optimization.',
     ),
     ServiceModel(
-      id: 7,
-      image: Constants.biogasMaintenanceImg,
+      id: '7',
       name: 'System Cleaning Service',
       duration: '2-3 hours',
       price: 150.00,
-      technician: 'Tom Wilson',
+      technicianName: 'Tom Wilson',
       rating: 4.7,
       description:
           'Professional cleaning of biogas system components and gas lines.',
     ),
     ServiceModel(
-      id: 8,
-      image: Constants.biogasMaintenanceImg,
+      id: '8',
       name: 'Performance Optimization',
       duration: '3-4 hours',
       price: 280.00,
-      technician: 'Expert Team',
+      technicianName: 'Expert Team',
       rating: 4.8,
       description:
           'Advanced system tuning and optimization for maximum biogas production efficiency.',
@@ -151,34 +143,31 @@ class DummyHelper {
 
     // Equipment & Products
     ServiceModel(
-      id: 9,
-      image: Constants.biogasPurchaseImg,
+      id: '9',
       name: 'Biogas Digester Unit',
       duration: 'N/A',
       price: 3500.00,
-      technician: 'Sales Team',
+      technicianName: 'Sales Team',
       rating: 4.5,
       description:
           'High-efficiency biogas digester unit for residential and small commercial use. 1000L capacity.',
     ),
     ServiceModel(
-      id: 10,
-      image: Constants.biogasPurchaseImg,
+      id: '10',
       name: 'Gas Storage Tank',
       duration: 'N/A',
       price: 1200.00,
-      technician: 'Sales Team',
+      technicianName: 'Sales Team',
       rating: 4.6,
       description:
           'Durable gas storage tank with safety valves and pressure monitoring system.',
     ),
     ServiceModel(
-      id: 11,
-      image: Constants.gasSystemImg,
+      id: '11',
       name: 'Gas Line Installation',
       duration: '6-8 hours',
       price: 450.00,
-      technician: 'David Brown',
+      technicianName: 'David Brown',
       rating: 4.9,
       description:
           'Professional gas line installation with safety inspection and leak testing.',
@@ -186,23 +175,21 @@ class DummyHelper {
 
     // Consultation Services
     ServiceModel(
-      id: 12,
-      image: Constants.consultationImg,
+      id: '12',
       name: 'System Consultation',
       duration: '1-2 hours',
       price: 100.00,
-      technician: 'Expert Team',
+      technicianName: 'Expert Team',
       rating: 4.8,
       description:
           'Expert consultation for biogas system planning, site assessment, and optimization recommendations.',
     ),
     ServiceModel(
-      id: 13,
-      image: Constants.consultationImg,
+      id: '13',
       name: 'Energy Audit Service',
       duration: '2-3 hours',
       price: 180.00,
-      technician: 'Expert Team',
+      technicianName: 'Expert Team',
       rating: 4.7,
       description:
           'Complete energy audit and efficiency analysis for biogas system optimization.',

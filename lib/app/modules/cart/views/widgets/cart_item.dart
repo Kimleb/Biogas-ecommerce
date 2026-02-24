@@ -21,7 +21,7 @@ class CartItem extends GetView<CartController> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Image.asset(product.image, width: 50.w, height: 40.h),
+          Image.asset(product.images.toString(), width: 50.w, height: 40.h),
           16.horizontalSpace,
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,

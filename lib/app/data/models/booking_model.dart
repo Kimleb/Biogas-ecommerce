@@ -1,3 +1,5 @@
+import 'part_model.dart';
+
 class BookingModel {
   final String id;
   final String customerId;
@@ -8,7 +10,8 @@ class BookingModel {
   final String? technicianName;
   final DateTime bookingDate;
   final DateTime serviceDate;
-  final String status; // 'pending', 'confirmed', 'in_progress', 'completed', 'cancelled'
+  final String
+      status; // 'pending', 'confirmed', 'in_progress', 'completed', 'cancelled'
   final double totalPrice;
   final String address;
   final String? notes;
@@ -77,54 +80,6 @@ class BookingModel {
       'selectedParts': selectedParts.map((e) => e.toJson()).toList(),
       'rating': rating,
       'review': review,
-    };
-  }
-}
-
-class PartModel {
-  final String id;
-  final String name;
-  final String description;
-  final double price;
-  final String category;
-  final String? image;
-  final bool inStock;
-  int quantity;
-
-  PartModel({
-    required this.id,
-    required this.name,
-    required this.description,
-    required this.price,
-    required this.category,
-    this.image,
-    this.inStock = true,
-    this.quantity = 1,
-  });
-
-  factory PartModel.fromJson(Map<String, dynamic> json) {
-    return PartModel(
-      id: json['id'] ?? '',
-      name: json['name'] ?? '',
-      description: json['description'] ?? '',
-      price: (json['price'] ?? 0).toDouble(),
-      category: json['category'] ?? '',
-      image: json['image'],
-      inStock: json['inStock'] ?? true,
-      quantity: json['quantity'] ?? 1,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'description': description,
-      'price': price,
-      'category': category,
-      'image': image,
-      'inStock': inStock,
-      'quantity': quantity,
     };
   }
 }

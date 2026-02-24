@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 
 import '../../../../utils/constants.dart';
 import '../../../routes/app_pages.dart';
+import '../../booking/views/booking_view.dart';
 import '../../calendar/views/calendar_view.dart';
 import '../../category/views/category_view.dart';
 import '../../profile/views/profile_view.dart';
@@ -77,7 +78,7 @@ class BaseView extends StatelessWidget {
                   children: const [
                     HomeView(),
                     CategoryView(),
-                    Center(),
+                    BookingView(),
                     CalendarView(),
                     ProfileView(), // Removed the space before ProfileView
                   ],
@@ -103,9 +104,9 @@ class BaseView extends StatelessWidget {
               label: 'category',
               icon: Constants.categoryIcon,
             ),
-            const BottomNavigationBarItem(
-              label: '',
-              icon: Center(),
+            _mBottomNavItem(
+              label: 'Booking',
+              icon: Constants.bookingIcon,
             ),
             _mBottomNavItem(
               label: 'Calendar',

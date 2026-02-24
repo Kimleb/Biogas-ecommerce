@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "468132554019",
+    "firebase_url": "https://biogas-ecommerce-default-rtdb.firebaseio.com",
     "project_id": "biogas-ecommerce",
     "storage_bucket": "biogas-ecommerce.firebasestorage.app"
   },
@@ -12,7 +13,12 @@
           "package_name": "com.biogas.services"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "468132554019-kctp5atclhv48n208o6mf9m04m7ci1b7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBMLBg5df1C_y8gmVIu1Pf0-cq4Q7axFWA"
@@ -20,7 +26,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "468132554019-kctp5atclhv48n208o6mf9m04m7ci1b7.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "468132554019-mgbpbo452a4onllt1838ae8bmhvjrdu6.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.emad.beltaje.getxskeleton.getxSkeleton"
+              }
+            }
+          ]
         }
       }
     }

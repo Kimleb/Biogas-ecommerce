@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import '../../../data/models/booking_model.dart';
 import '../../../data/models/service_model.dart';
 import '../../../data/models/user_model.dart';
+import '../../../data/models/part_model.dart';
 import '../../../data/dummy_data.dart';
 
 class BookingController extends GetxController {
@@ -34,7 +35,7 @@ class BookingController extends GetxController {
   void updatePartQuantity(String partId, int quantity) {
     final index = selectedParts.indexWhere((p) => p.id == partId);
     if (index >= 0 && quantity > 0) {
-      selectedParts[index].quantity = quantity;
+      selectedParts[index] = selectedParts[index].copyWith(quantity: quantity);
       selectedParts.refresh();
     }
   }

@@ -1,57 +1,56 @@
-class ServiceModel {
+class PartModel {
   final String id;
   final String name;
   final String description;
   final List<String> images;
   final List<String> thumbnailImages;
-  final String duration;
   final double price;
-  final String? technicianId;
-  final String? technicianName;
-  final double rating;
+  final int quantity;
   final String? categoryId;
   final String? category;
+  final String? brand;
+  final String? model;
   final bool isActive;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
-  ServiceModel({
+  PartModel({
     required this.id,
     required this.name,
     required this.description,
     this.images = const [],
     this.thumbnailImages = const [],
-    required this.duration,
     required this.price,
-    this.technicianId,
-    this.technicianName,
-    this.rating = 0.0,
+    required this.quantity,
     this.categoryId,
     this.category,
+    this.brand,
+    this.model,
     this.isActive = true,
     this.createdAt,
     this.updatedAt,
   });
 
-  factory ServiceModel.fromJson(Map<String, dynamic> json) {
-    return ServiceModel(
+  factory PartModel.fromJson(Map<String, dynamic> json) {
+    return PartModel(
       id: json['id'] ?? '',
       name: json['name'] ?? '',
       description: json['description'] ?? '',
       images: List<String>.from(json['images'] ?? []),
       thumbnailImages: List<String>.from(json['thumbnailImages'] ?? []),
-      duration: json['duration'] ?? '',
       price: (json['price'] as num?)?.toDouble() ?? 0.0,
-      technicianId: json['technicianId'],
-      technicianName: json['technicianName'],
-      rating: (json['rating'] as num?)?.toDouble() ?? 0.0,
+      quantity: json['quantity'] ?? 0,
       categoryId: json['categoryId'],
       category: json['category'],
+      brand: json['brand'],
+      model: json['model'],
       isActive: json['isActive'] ?? true,
-      createdAt:
-          json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
-      updatedAt:
-          json['updatedAt'] != null ? DateTime.parse(json['updatedAt']) : null,
+      createdAt: json['createdAt'] != null 
+          ? DateTime.parse(json['createdAt']) 
+          : null,
+      updatedAt: json['updatedAt'] != null 
+          ? DateTime.parse(json['updatedAt']) 
+          : null,
     );
   }
 
@@ -62,49 +61,46 @@ class ServiceModel {
       'description': description,
       'images': images,
       'thumbnailImages': thumbnailImages,
-      'duration': duration,
       'price': price,
-      'technicianId': technicianId,
-      'technicianName': technicianName,
-      'rating': rating,
+      'quantity': quantity,
       'categoryId': categoryId,
       'category': category,
+      'brand': brand,
+      'model': model,
       'isActive': isActive,
       'createdAt': createdAt?.toIso8601String(),
       'updatedAt': updatedAt?.toIso8601String(),
     };
   }
 
-  ServiceModel copyWith({
+  PartModel copyWith({
     String? id,
     String? name,
     String? description,
     List<String>? images,
     List<String>? thumbnailImages,
-    String? duration,
     double? price,
-    String? technicianId,
-    String? technicianName,
-    double? rating,
+    int? quantity,
     String? categoryId,
     String? category,
+    String? brand,
+    String? model,
     bool? isActive,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
-    return ServiceModel(
+    return PartModel(
       id: id ?? this.id,
       name: name ?? this.name,
       description: description ?? this.description,
       images: images ?? this.images,
       thumbnailImages: thumbnailImages ?? this.thumbnailImages,
-      duration: duration ?? this.duration,
       price: price ?? this.price,
-      technicianId: technicianId ?? this.technicianId,
-      technicianName: technicianName ?? this.technicianName,
-      rating: rating ?? this.rating,
+      quantity: quantity ?? this.quantity,
       categoryId: categoryId ?? this.categoryId,
       category: category ?? this.category,
+      brand: brand ?? this.brand,
+      model: model ?? this.model,
       isActive: isActive ?? this.isActive,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -115,9 +111,5 @@ class ServiceModel {
   String? get primaryImage => images.isNotEmpty ? images.first : null;
 
   // Get the primary thumbnail
-  String? get primaryThumbnail =>
-      thumbnailImages.isNotEmpty ? thumbnailImages.first : null;
-
-  // Get technician name (for backward compatibility)
-  String? get technician => technicianName;
+  String? get primaryThumbnail => thumbnailImages.isNotEmpty ? thumbnailImages.first : null;
 }

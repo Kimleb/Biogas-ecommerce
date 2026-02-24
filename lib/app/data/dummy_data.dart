@@ -1,4 +1,5 @@
 import 'models/booking_model.dart';
+import 'models/part_model.dart';
 import 'models/user_model.dart';
 
 class DummyData {
@@ -10,7 +11,7 @@ class DummyData {
       description: 'High-efficiency biogas burner for cooking',
       price: 45.00,
       category: 'Burners',
-      inStock: true,
+      quantity: 10,
     ),
     PartModel(
       id: '2',
@@ -18,7 +19,7 @@ class DummyData {
       description: 'Adjustable pressure regulator for biogas systems',
       price: 35.00,
       category: 'Regulators',
-      inStock: true,
+      quantity: 15,
     ),
     PartModel(
       id: '3',
@@ -26,7 +27,7 @@ class DummyData {
       description: 'Durable PVC pipe for biogas transport',
       price: 25.00,
       category: 'Pipes',
-      inStock: true,
+      quantity: 20,
     ),
     PartModel(
       id: '4',
@@ -34,7 +35,7 @@ class DummyData {
       description: 'Safety valve for biogas control',
       price: 15.00,
       category: 'Valves',
-      inStock: true,
+      quantity: 25,
     ),
     PartModel(
       id: '5',
@@ -42,7 +43,7 @@ class DummyData {
       description: 'Rubber seal for biogas digester',
       price: 20.00,
       category: 'Seals',
-      inStock: true,
+      quantity: 30,
     ),
     PartModel(
       id: '6',
@@ -50,7 +51,7 @@ class DummyData {
       description: 'H2S removal filter for biogas purification',
       price: 55.00,
       category: 'Filters',
-      inStock: true,
+      quantity: 12,
     ),
     PartModel(
       id: '7',
@@ -58,7 +59,7 @@ class DummyData {
       description: 'Digital pressure gauge for monitoring',
       price: 30.00,
       category: 'Gauges',
-      inStock: true,
+      quantity: 18,
     ),
     PartModel(
       id: '8',
@@ -66,7 +67,7 @@ class DummyData {
       description: 'Flexible gas hose with fittings',
       price: 18.00,
       category: 'Hoses',
-      inStock: true,
+      quantity: 22,
     ),
   ];
 

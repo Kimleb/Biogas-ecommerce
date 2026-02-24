@@ -127,31 +127,31 @@ class SignupView extends GetView<AuthController> {
                       ),
                     ),
                     8.verticalSpace,
-                    CustomFormField(
-                      controller: controller.passwordController,
-                      hint: 'Create a password',
-                      prefixIcon:
-                          Icon(Icons.lock_outline, color: theme.hintColor),
-                      obscureText: true,
-                      suffixIcon: IconButton(
-                        onPressed: controller.togglePasswordVisibility,
-                        icon: Icon(
-                          controller.isPasswordVisible.value
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                          color: theme.hintColor,
-                        ),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter a password';
-                        }
-                        if (value.length < 6) {
-                          return 'Password must be at least 6 characters';
-                        }
-                        return null;
-                      },
-                    ),
+                    Obx(() => CustomFormField(
+                          controller: controller.passwordController,
+                          hint: 'Create a password',
+                          prefixIcon:
+                              Icon(Icons.lock_outline, color: theme.hintColor),
+                          obscureText: !controller.isPasswordVisible.value,
+                          suffixIcon: IconButton(
+                            onPressed: controller.togglePasswordVisibility,
+                            icon: Icon(
+                              controller.isPasswordVisible.value
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                              color: theme.hintColor,
+                            ),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter a password';
+                            }
+                            if (value.length < 6) {
+                              return 'Password must be at least 6 characters';
+                            }
+                            return null;
+                          },
+                        )),
                     12.verticalSpace,
 
                     // Terms and Conditions
@@ -198,7 +198,7 @@ class SignupView extends GetView<AuthController> {
 
               // Signup Button
               Obx(() => CustomButton(
-                    text: 'Create Account',
+                    text: controller.isLoading.value ? '' : 'Create Account',
                     onPressed: (controller.acceptTerms.value &&
                             !controller.isLoading.value)
                         ? controller.onSignup
@@ -209,6 +209,18 @@ class SignupView extends GetView<AuthController> {
                     hasShadow: false,
                     disabled: controller.isLoading.value ||
                         !controller.acceptTerms.value,
+                    icon: controller.isLoading.value
+                        ? SizedBox(
+                            width: 20.w,
+                            height: 20.w,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white,
+                              ),
+                            ),
+                          )
+                        : null,
                   )),
 
               24.verticalSpace,

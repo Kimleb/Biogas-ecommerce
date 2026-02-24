@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../../../../utils/dummy_helper.dart';
 import '../../cart/controllers/cart_controller.dart';
 import '../../../data/services/auth_service.dart';
+import '../../../routes/app_pages.dart';
 
 class BaseController extends GetxController {
   // current screen index
@@ -15,6 +16,7 @@ class BaseController extends GetxController {
   String get userName => AuthService.to.user?.displayName ?? 'Guest';
   String get userEmail => AuthService.to.user?.email ?? '';
   bool get isUserSignedIn => AuthService.to.isSignedIn;
+  bool get isAdmin => AuthService.to.isAdmin;
 
   @override
   void onInit() {
@@ -30,6 +32,15 @@ class BaseController extends GetxController {
   changeScreen(int selectedIndex) {
     currentIndex = selectedIndex;
     update();
+  }
+
+  /// Navigate to admin dashboard if user is admin
+  void navigateToAdmin() {
+    if (isAdmin) {
+      Get.toNamed(Routes.ADMIN_DASHBOARD);
+    } else {
+      Get.snackbar('Access Denied', 'You do not have admin privileges');
+    }
   }
 
   /// calculate number of products in cart

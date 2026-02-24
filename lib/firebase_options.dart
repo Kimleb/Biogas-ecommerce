@@ -13,10 +13,6 @@ class DefaultFirebaseOptions {
         return android;
       case TargetPlatform.iOS:
         return ios;
-      case TargetPlatform.macOS:
-        return macos;
-      case TargetPlatform.windows:
-        return windows;
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
@@ -53,8 +49,6 @@ class DefaultFirebaseOptions {
     messagingSenderId: '468132554019',
     projectId: 'biogas-ecommerce',
     storageBucket: 'biogas-ecommerce.firebasestorage.app',
-    iosBundleId: 'com.emad.beltaje.getxskeleton.getxSkeleton',
+    iosBundleId: 'com.biogas.services',
   );
 }
-
- 

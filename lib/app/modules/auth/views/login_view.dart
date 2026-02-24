@@ -78,31 +78,31 @@ class LoginView extends GetView<AuthController> {
                       ),
                     ),
                     8.verticalSpace,
-                    CustomFormField(
-                      controller: controller.passwordController,
-                      hint: 'Enter your password',
-                      prefixIcon:
-                          Icon(Icons.lock_outline, color: theme.hintColor),
-                      obscureText: true,
-                      suffixIcon: IconButton(
-                        onPressed: controller.togglePasswordVisibility,
-                        icon: Icon(
-                          controller.isPasswordVisible.value
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                          color: theme.hintColor,
-                        ),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your password';
-                        }
-                        if (value.length < 6) {
-                          return 'Password must be at least 6 characters';
-                        }
-                        return null;
-                      },
-                    ),
+                    Obx(() => CustomFormField(
+                          controller: controller.passwordController,
+                          hint: 'Enter your password',
+                          prefixIcon:
+                              Icon(Icons.lock_outline, color: theme.hintColor),
+                          obscureText: !controller.isPasswordVisible.value,
+                          suffixIcon: IconButton(
+                            onPressed: controller.togglePasswordVisibility,
+                            icon: Icon(
+                              controller.isPasswordVisible.value
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                              color: theme.hintColor,
+                            ),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter your password';
+                            }
+                            if (value.length < 6) {
+                              return 'Password must be at least 6 characters';
+                            }
+                            return null;
+                          },
+                        )),
                     12.verticalSpace,
 
                     // Forgot Password
@@ -127,7 +127,7 @@ class LoginView extends GetView<AuthController> {
 
               // Login Button
               Obx(() => CustomButton(
-                    text: 'Sign In',
+                    text: controller.isLoading.value ? '' : 'Sign In',
                     onPressed:
                         controller.isLoading.value ? null : controller.onLogin,
                     fontSize: 16.sp,
@@ -135,6 +135,18 @@ class LoginView extends GetView<AuthController> {
                     verticalPadding: 16.h,
                     hasShadow: false,
                     disabled: controller.isLoading.value,
+                    icon: controller.isLoading.value
+                        ? SizedBox(
+                            width: 20.w,
+                            height: 20.w,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white,
+                              ),
+                            ),
+                          )
+                        : null,
                   )),
 
               24.verticalSpace,
@@ -159,21 +171,37 @@ class LoginView extends GetView<AuthController> {
               24.verticalSpace,
 
               // Social Login
-              CustomButton(
-                text: 'Continue with Google',
-                onPressed: controller.onGoogleSignIn,
-                fontSize: 16.sp,
-                radius: 12.r,
-                verticalPadding: 16.h,
-                hasShadow: false,
-                backgroundColor: Colors.white,
-                foregroundColor: Colors.black87,
-                icon: Padding(
-                  padding: EdgeInsets.only(left: 8.w),
-                  child: SvgPicture.asset(Constants.googleLogo,
-                      width: 20.w, height: 20.w),
-                ),
-              ),
+              Obx(() => CustomButton(
+                    text: controller.isLoading.value
+                        ? ''
+                        : 'Continue with Google',
+                    onPressed: controller.isLoading.value
+                        ? null
+                        : controller.onGoogleSignIn,
+                    fontSize: 16.sp,
+                    radius: 12.r,
+                    verticalPadding: 16.h,
+                    hasShadow: false,
+                    backgroundColor: Colors.white,
+                    foregroundColor: Colors.black87,
+                    disabled: controller.isLoading.value,
+                    icon: controller.isLoading.value
+                        ? SizedBox(
+                            width: 20.w,
+                            height: 20.w,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.black87,
+                              ),
+                            ),
+                          )
+                        : Padding(
+                            padding: EdgeInsets.only(left: 8.w),
+                            child: SvgPicture.asset(Constants.googleLogo,
+                                width: 20.w, height: 20.w),
+                          ),
+                  )),
 
               32.verticalSpace,
 
