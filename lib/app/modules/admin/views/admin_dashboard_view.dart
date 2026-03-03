@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+
 import '../controllers/admin_controller.dart';
 import '../../../routes/app_pages.dart';
+import '../../../data/services/cloudinary_service.dart';
 
 extension HorizontalSpace on double {
   SizedBox get horizontalSpace => SizedBox(width: this);
@@ -19,148 +21,275 @@ class AdminDashboardView extends GetView<AdminController> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color(0xFFF8F9FA),
-      body: Column(
+      body: Obx(() {
+        if (controller.isLoading.value) {
+          return _buildLoadingState();
+        }
+        return RefreshIndicator(
+          onRefresh: () => controller.loadData(),
+          child: SingleChildScrollView(
+            physics: AlwaysScrollableScrollPhysics(),
+            child: Column(
+              children: [
+                // Modern Header
+                _buildHeader(),
+                // Summary Cards
+                _buildSummarySection(),
+                // Quick Actions Section
+                _buildQuickActionsSection(),
+                // Tab Section
+                _buildTabSection(),
+              ],
+            ),
+          ),
+        );
+      }),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Container(
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Color(0xFF2E3192), // Deep blue
+            Color(0xFF1B1464), // Darker blue
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Color(0xFF2E3192).withOpacity(0.3),
+            blurRadius: 20,
+            offset: Offset(0, 10),
+          ),
+        ],
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(30.r),
+          bottomRight: Radius.circular(30.r),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Modern Header
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Admin Dashboard',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 28.sp,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  6.verticalSpace,
+                  Container(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(20.r),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.3),
+                        width: 1,
+                      ),
+                    ),
+                    child: Text(
+                      'Manage your biogas services',
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.95),
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              Container(
+                padding: EdgeInsets.all(16.w),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(16.r),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.25),
+                    width: 1,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 10,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Icon(
+                  Icons.dashboard_rounded,
+                  color: Colors.white,
+                  size: 28.sp,
+                ),
+              ),
+            ],
+          ),
+          24.verticalSpace,
+          // Summary Cards
+          _buildSummaryCards(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoadingState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
           Container(
-            padding: EdgeInsets.all(20.w),
+            width: 80.w,
+            height: 80.w,
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [
-                  Color(0xFF2E3192), // Deep blue
-                  Color(0xFF1B1464), // Darker blue
-                ],
+                colors: [Color(0xFF2E3192), Color(0xFFFF8C00)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: Color(0xFF2E3192).withOpacity(0.3),
-                  blurRadius: 20,
-                  offset: Offset(0, 10),
-                ),
-              ],
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(30.r),
-                bottomRight: Radius.circular(30.r),
+              borderRadius: BorderRadius.circular(20.r),
+            ),
+            child: Center(
+              child: CircularProgressIndicator(
+                strokeWidth: 3,
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
               ),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          ),
+          24.verticalSpace,
+          Text(
+            'Loading Dashboard...',
+            style: TextStyle(
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF2E3192),
+            ),
+          ),
+          8.verticalSpace,
+          Text(
+            'Please wait while we fetch your data',
+            style: TextStyle(
+              fontSize: 14.sp,
+              color: Colors.grey[600],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSummarySection() {
+    return Padding(
+      padding: EdgeInsets.all(20.w),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Overview',
+                style: TextStyle(
+                  fontSize: 20.sp,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                decoration: BoxDecoration(
+                  color: Color(0xFF2E3192).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(20.r),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Admin Dashboard',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 28.sp,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                        6.verticalSpace,
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 12.w, vertical: 4.h),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(20.r),
-                            border: Border.all(
-                              color: Colors.white.withOpacity(0.3),
-                              width: 1,
-                            ),
-                          ),
-                          child: Text(
-                            'Manage your biogas services',
-                            style: TextStyle(
-                              color: Colors.white.withOpacity(0.95),
-                              fontSize: 13.sp,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    Container(
-                      padding: EdgeInsets.all(16.w),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(16.r),
-                        border: Border.all(
-                          color: Colors.white.withOpacity(0.25),
-                          width: 1,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 10,
-                            offset: Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Icon(
-                        Icons.dashboard_rounded,
-                        color: Colors.white,
-                        size: 28.sp,
+                    Icon(Icons.refresh, color: Color(0xFF2E3192), size: 16.sp),
+                    4.horizontalSpace,
+                    Text(
+                      'Last updated: Just now',
+                      style: TextStyle(
+                        fontSize: 11.sp,
+                        color: Color(0xFF2E3192),
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
                 ),
-                24.verticalSpace,
-                // Summary Cards
-                _buildSummaryCards(),
-              ],
-            ),
-          ),
-
-          // Quick Actions Section
-          Padding(
-            padding: EdgeInsets.all(20.w),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Quick Actions',
-                  style: TextStyle(
-                    fontSize: 18.sp,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                ),
-                16.verticalSpace,
-                _buildQuickActionButtons(),
-              ],
-            ),
-          ),
-
-          // Tab Section
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20.w),
-            child: _buildModernTabBar(),
-          ),
-
-          16.verticalSpace,
-
-          // Hint Section
-          Expanded(
-            child: Center(
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 24.w),
-                child: Text(
-                  'Use the tabs above to open management pages.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
               ),
+            ],
+          ),
+          16.verticalSpace,
+          _buildSummaryCards(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuickActionsSection() {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 20.w),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Quick Actions',
+            style: TextStyle(
+              fontSize: 20.sp,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+          16.verticalSpace,
+          _buildQuickActionButtons(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTabSection() {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 20.w),
+      child: Column(
+        children: [
+          _buildModernTabBar(),
+          16.verticalSpace,
+          Container(
+            padding: EdgeInsets.all(16.w),
+            decoration: BoxDecoration(
+              color: Color(0xFF2E3192).withOpacity(0.05),
+              borderRadius: BorderRadius.circular(12.r),
+              border: Border.all(
+                color: Color(0xFF2E3192).withOpacity(0.1),
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.info_outline, color: Color(0xFF2E3192), size: 20.sp),
+                8.horizontalSpace,
+                Expanded(
+                  child: Text(
+                    'Navigate to different management sections using the tabs above',
+                    style: TextStyle(
+                      fontSize: 13.sp,
+                      color: Color(0xFF2E3192),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -312,6 +441,28 @@ class AdminDashboardView extends GetView<AdminController> {
           children: [
             Expanded(
               child: _buildQuickActionButton(
+                'Test Cloudinary',
+                Icons.cloud_upload_outlined,
+                Color(0xFF9C27B0),
+                () => _testCloudinaryConfig(),
+              ),
+            ),
+            12.horizontalSpace,
+            Expanded(
+              child: _buildQuickActionButton(
+                'Force Refresh',
+                Icons.refresh,
+                Color(0xFFFF5722),
+                () => controller.loadData(),
+              ),
+            ),
+          ],
+        ),
+        12.verticalSpace,
+        Row(
+          children: [
+            Expanded(
+              child: _buildQuickActionButton(
                 'Export Data',
                 Icons.download_outlined,
                 Color(0xFFFF9800),
@@ -323,13 +474,54 @@ class AdminDashboardView extends GetView<AdminController> {
               child: _buildQuickActionButton(
                 'Settings',
                 Icons.settings_outlined,
-                Color(0xFF9C27B0),
+                Color(0xFF607D8B),
                 () => _showSettingsDialog(),
               ),
             ),
           ],
         ),
       ],
+    );
+  }
+
+  void _testCloudinaryConfig() {
+    final cloudinaryService = Get.find<CloudinaryService>();
+    cloudinaryService.testConfiguration();
+  }
+
+  void _showDebugInfo() {
+    Get.dialog(
+      Dialog(
+        child: Container(
+          padding: EdgeInsets.all(20.w),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Debug Information',
+                style: TextStyle(
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              16.verticalSpace,
+              Text('Services: ${controller.services.length}'),
+              Text('Bookings: ${controller.bookings.length}'),
+              Text('Parts: ${controller.parts.length}'),
+              Text('Loading: ${controller.isLoading.value}'),
+              16.verticalSpace,
+              Text(
+                  'Controller Registered: ${Get.isRegistered<AdminController>()}'),
+              16.verticalSpace,
+              ElevatedButton(
+                onPressed: () => Get.back(),
+                child: Text('Close'),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -388,13 +580,13 @@ class AdminDashboardView extends GetView<AdminController> {
           ),
         ],
       ),
-      child: Obx(() => Row(
-            children: [
-              _buildModernTab('Services', 0, Icons.eco_rounded),
-              _buildModernTab('Bookings', 1, Icons.calendar_today),
-              _buildModernTab('Parts', 2, Icons.build),
-            ],
-          )),
+      child: Row(
+        children: [
+          _buildModernTab('Services', 0, Icons.eco_rounded),
+          _buildModernTab('Bookings', 1, Icons.calendar_today),
+          _buildModernTab('Parts', 2, Icons.build),
+        ],
+      ),
     );
   }
 

@@ -1,8 +1,20 @@
 import 'dart:io';
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
+import '../../../config/cloudinary_config.dart';
+
+// Extension for spacing
+extension HorizontalSpace on double {
+  SizedBox get horizontalSpace => SizedBox(width: this);
+}
+
+extension VerticalSpace on double {
+  SizedBox get verticalSpace => SizedBox(height: this);
+}
 
 class CloudinaryService extends GetxService {
   static CloudinaryService get to => Get.find();
@@ -22,7 +34,22 @@ class CloudinaryService extends GetxService {
     defaultValue: '',
   );
 
-  bool get isConfigured => cloudName.isNotEmpty && uploadPreset.isNotEmpty;
+  String _runtimeCloudName = '';
+  String _runtimeUploadPreset = '';
+
+  String get effectiveCloudName =>
+      _runtimeCloudName.isNotEmpty ? _runtimeCloudName : cloudName;
+  String get effectiveUploadPreset =>
+      _runtimeUploadPreset.isNotEmpty ? _runtimeUploadPreset : uploadPreset;
+
+  bool get isConfigured => CloudinaryConfig.isValidConfig;
+
+  void configure({required String cloudName, required String uploadPreset}) {
+    _runtimeCloudName = cloudName.trim();
+    _runtimeUploadPreset = uploadPreset.trim();
+    print(
+        'Cloudinary configured: cloudName=$cloudName, uploadPreset=$uploadPreset');
+  }
 
   @override
   void onInit() {
@@ -87,12 +114,18 @@ class CloudinaryService extends GetxService {
       if (!isConfigured) {
         Get.snackbar(
           'Configuration Error',
-          'Cloudinary is not configured. Please set CLOUDINARY_CLOUD_NAME and CLOUDINARY_UPLOAD_PRESET.',
+          'Cloudinary is not configured. Please set your cloud name and upload preset.',
           backgroundColor: Colors.red,
           colorText: Colors.white,
+          duration: const Duration(seconds: 5),
         );
+        print(
+            'Cloudinary not configured: cloudName=$effectiveCloudName, uploadPreset=$effectiveUploadPreset');
         return null;
       }
+
+      print(
+          'Starting upload to Cloudinary: cloudName=$effectiveCloudName, folder=$folder');
 
       Get.snackbar(
         'Uploading',
@@ -105,7 +138,8 @@ class CloudinaryService extends GetxService {
       // Create multipart request
       final request = http.MultipartRequest(
         'POST',
-        Uri.parse('https://api.cloudinary.com/v1_1/$cloudName/image/upload'),
+        Uri.parse(
+            'https://api.cloudinary.com/v1_1/$effectiveCloudName/image/upload'),
       );
 
       // Add file
@@ -118,39 +152,88 @@ class CloudinaryService extends GetxService {
       request.files.add(multipartFile);
 
       // Add form fields
-      request.fields['upload_preset'] = uploadPreset;
+      request.fields['upload_preset'] = effectiveUploadPreset;
       request.fields['folder'] = folder;
+
+      print('Upload request prepared, sending...');
 
       // Send request
       final response = await request.send();
       final responseBody = await response.stream.bytesToString();
 
-      if (response.statusCode == 200) {
-        // Parse response (simple parsing for secure_url)
-        final urlMatch =
-            RegExp(r'"secure_url":"([^"]+)"').firstMatch(responseBody);
-        if (urlMatch != null) {
-          final secureUrl = urlMatch.group(1)?.replaceAll(r'\/', '/');
-          if (secureUrl != null) {
-            Get.snackbar(
-              'Success',
-              'Image uploaded successfully',
-              backgroundColor: Colors.green,
-              colorText: Colors.white,
-            );
-            return secureUrl;
-          }
+      print('Upload response status: ${response.statusCode}');
+      print('Upload response body: $responseBody');
+
+      final decoded = jsonDecode(responseBody);
+      if (response.statusCode == 200 && decoded is Map) {
+        final secureUrl = decoded['secure_url'];
+        if (secureUrl is String && secureUrl.isNotEmpty) {
+          Get.snackbar(
+            'Success',
+            'Image uploaded successfully',
+            backgroundColor: Colors.green,
+            colorText: Colors.white,
+          );
+          print('Upload successful: $secureUrl');
+          return secureUrl;
         }
-        throw Exception('Failed to parse upload response');
-      } else {
-        throw Exception('Upload failed with status: ${response.statusCode}');
+        throw Exception('Upload succeeded but secure_url is missing');
       }
+
+      // Handle specific error cases
+      String errorMessage = 'Upload failed (${response.statusCode})';
+
+      if (response.statusCode == 400) {
+        if (responseBody.contains('upload preset')) {
+          errorMessage =
+              'Upload preset "$effectiveUploadPreset" not found or invalid. Please check your Cloudinary settings.';
+        } else if (responseBody.contains('cloud name')) {
+          errorMessage =
+              'Cloud name "$effectiveCloudName" is invalid. Please check your Cloudinary cloud name.';
+        } else if (responseBody.contains('file')) {
+          errorMessage =
+              'Invalid file format or file too large. Please try a different image.';
+        } else {
+          errorMessage =
+              'Bad request (400). Please check your Cloudinary configuration.';
+        }
+      } else if (response.statusCode == 401) {
+        errorMessage =
+            'Authentication failed. Check your Cloudinary API settings.';
+      } else if (response.statusCode == 403) {
+        errorMessage =
+            'Access denied. Upload preset may not allow unsigned uploads.';
+      } else if (response.statusCode == 404) {
+        errorMessage = 'Cloud name "$effectiveCloudName" not found.';
+      }
+
+      final error = decoded is Map
+          ? (decoded['error']?['message'] ?? decoded['error'])
+          : null;
+
+      if (error != null) {
+        errorMessage += '\nDetails: $error';
+      }
+
+      print('Upload error: $errorMessage');
+
+      Get.snackbar(
+        'Upload Failed',
+        errorMessage,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 5),
+      );
+
+      throw Exception(errorMessage);
     } catch (e) {
+      print('Upload exception: $e');
       Get.snackbar(
         'Error',
         'Failed to upload image: $e',
         backgroundColor: Colors.red,
         colorText: Colors.white,
+        duration: const Duration(seconds: 5),
       );
       return null;
     }
@@ -174,12 +257,76 @@ class CloudinaryService extends GetxService {
   // Get optimized image URL (basic transformation)
   String getOptimizedImageUrl(String publicId,
       {int width = 800, int height = 600}) {
-    return 'https://res.cloudinary.com/$cloudName/image/fetch/w_$width,h_$height,q_auto,f_auto/$publicId';
+    return 'https://res.cloudinary.com/$effectiveCloudName/image/fetch/w_$width,h_$height,q_auto,f_auto/$publicId';
   }
 
   // Get thumbnail URL
   String getThumbnailUrl(String publicId, {int width = 200, int height = 200}) {
-    return 'https://res.cloudinary.com/$cloudName/image/fetch/w_$width,h_$height,q_auto,f_auto,c_fill/$publicId';
+    return 'https://res.cloudinary.com/$effectiveCloudName/image/fetch/w_$width,h_$height,q_auto,f_auto,c_fill/$publicId';
+  }
+
+  // Test Cloudinary configuration
+  void testConfiguration() {
+    print('=== Cloudinary Configuration Test ===');
+    print('Cloud Name: $effectiveCloudName');
+    print('Upload Preset: $effectiveUploadPreset');
+    print('Is Configured: $isConfigured');
+
+    if (!CloudinaryConfig.isValidConfig) {
+      String setupMessage = '''
+CLOUDINARY SETUP REQUIRED:
+
+1. Go to: https://cloudinary.com/console
+2. Find your cloud name in the URL
+3. Go to Settings → Upload → Upload presets
+4. Create/enable an upload preset
+5. Update config in: lib/config/cloudinary_config.dart
+
+Current values:
+- Cloud Name: $effectiveCloudName
+- Upload Preset: $effectiveUploadPreset
+      ''';
+
+      Get.dialog(
+        Dialog(
+          child: Container(
+            padding: EdgeInsets.all(20.w),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '⚠️ Cloudinary Setup Required',
+                  style: TextStyle(
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.red,
+                  ),
+                ),
+                16.0.verticalSpace,
+                Text(
+                  setupMessage,
+                  style: TextStyle(fontSize: 12.sp),
+                ),
+                16.0.verticalSpace,
+                ElevatedButton(
+                  onPressed: () => Get.back(),
+                  child: Text('I Understand'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    } else {
+      Get.snackbar(
+        '✅ Configuration OK',
+        'Cloudinary is ready:\nCloud: $effectiveCloudName\nPreset: $effectiveUploadPreset',
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 4),
+      );
+    }
   }
 
   // Show image picker bottom sheet

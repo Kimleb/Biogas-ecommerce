@@ -54,13 +54,21 @@ class DatabaseService extends GetxService {
 
   Future<List<ServiceModel>> getAllServices() async {
     try {
+      print('Fetching services from Firebase...');
       final snapshot = await servicesRef.get();
+      print('Services snapshot exists: ${snapshot.exists}');
+
       List<ServiceModel> services = [];
       if (snapshot.exists) {
         final data = snapshot.value as Map<dynamic, dynamic>;
+        print('Services data: $data');
         data.forEach((key, value) {
+          print('Processing service: $key');
           services.add(ServiceModel.fromJson(Map<String, dynamic>.from(value)));
         });
+        print('Total services loaded: ${services.length}');
+      } else {
+        print('No services found in database');
       }
       return services;
     } catch (e) {
@@ -165,13 +173,21 @@ class DatabaseService extends GetxService {
 
   Future<List<BookingModel>> getAllBookings() async {
     try {
+      print('Fetching bookings from Firebase...');
       final snapshot = await bookingsRef.get();
+      print('Bookings snapshot exists: ${snapshot.exists}');
+
       List<BookingModel> bookings = [];
       if (snapshot.exists) {
         final data = snapshot.value as Map<dynamic, dynamic>;
+        print('Bookings data: $data');
         data.forEach((key, value) {
+          print('Processing booking: $key');
           bookings.add(BookingModel.fromJson(Map<String, dynamic>.from(value)));
         });
+        print('Total bookings loaded: ${bookings.length}');
+      } else {
+        print('No bookings found in database');
       }
       return bookings;
     } catch (e) {
@@ -216,13 +232,21 @@ class DatabaseService extends GetxService {
 
   Future<List<Map<String, dynamic>>> getAllParts() async {
     try {
+      print('Fetching parts from Firebase...');
       final snapshot = await partsRef.get();
+      print('Parts snapshot exists: ${snapshot.exists}');
+
       List<Map<String, dynamic>> parts = [];
       if (snapshot.exists) {
         final data = snapshot.value as Map<dynamic, dynamic>;
+        print('Parts data: $data');
         data.forEach((key, value) {
+          print('Processing part: $key');
           parts.add(Map<String, dynamic>.from(value));
         });
+        print('Total parts loaded: ${parts.length}');
+      } else {
+        print('No parts found in database');
       }
       return parts;
     } catch (e) {

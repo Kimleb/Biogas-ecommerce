@@ -8,6 +8,7 @@ import 'app/data/services/auth_service.dart';
 import 'app/data/services/cloudinary_service.dart';
 import 'app/data/services/database_service.dart';
 import 'app/routes/app_pages.dart';
+import 'config/cloudinary_config.dart';
 import 'config/theme/my_theme.dart';
 import 'config/translations/localization_service.dart';
 import '../firebase_options.dart';
@@ -27,6 +28,10 @@ Future<void> main() async {
   // Initialize services
   await Get.putAsync(() async => AuthService());
   await Get.putAsync(() async => CloudinaryService());
+  CloudinaryService.to.configure(
+    cloudName: CloudinaryConfig.cloudName,
+    uploadPreset: CloudinaryConfig.uploadPreset,
+  );
   Get.put(DatabaseService());
 
   runApp(

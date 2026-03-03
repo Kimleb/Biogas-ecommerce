@@ -173,13 +173,14 @@ class ProfileView extends GetView<ProfileController> {
                 )
               else
                 SliverFillRemaining(
+                  hasScrollBody: false,
                   child: Padding(
                     padding: EdgeInsets.all(24.w),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         SvgPicture.asset(
-                          'assets/vectors/profile.svg',
+                          'assets/vectors/user.svg',
                           width: 200.w,
                           height: 200.w,
                         ),
@@ -342,7 +343,7 @@ class ProfileView extends GetView<ProfileController> {
           _buildMenuTile(
             icon: Icons.history,
             title: 'Booking History',
-            onTap: () => Get.toNamed(Routes.BOOKING),
+            onTap: () => Get.toNamed(Routes.BOOKING_HISTORY),
             theme: theme,
           ),
           _buildDivider(),

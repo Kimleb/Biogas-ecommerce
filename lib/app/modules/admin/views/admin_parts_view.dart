@@ -29,7 +29,7 @@ class AdminPartsView extends GetView<AdminController> {
           icon: const Icon(Icons.arrow_back, color: Colors.white),
         ),
       ),
-      body: Obx(() {
+      body: SingleChildScrollView(child: Obx(() {
         if (controller.parts.isEmpty) {
           return Center(
             child: Column(
@@ -175,10 +175,11 @@ class AdminPartsView extends GetView<AdminController> {
             );
           },
         );
-      }),
+      })),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () =>
-            Get.toNamed(Routes.ADMIN_DASHBOARD, arguments: {'tab': 2}),
+        onPressed: () {
+          Get.toNamed(Routes.ADMIN_DASHBOARD, arguments: {'tab': 2});
+        },
         backgroundColor: const Color(0xFFFF8C00),
         icon: const Icon(Icons.add, color: Colors.white),
         label: const Text('Add Part', style: TextStyle(color: Colors.white)),

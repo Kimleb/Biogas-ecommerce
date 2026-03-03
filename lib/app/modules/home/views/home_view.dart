@@ -164,7 +164,7 @@ class HomeView extends GetView<HomeController> {
                                 padding: EdgeInsets.all(40.h),
                                 child: Column(
                                   children: [
-                                    CircularProgressIndicator(
+                                    const CircularProgressIndicator(
                                         color: Color(0xFFFF8C00)),
                                     16.verticalSpace,
                                     Text(

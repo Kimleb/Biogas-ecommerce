@@ -59,10 +59,16 @@ class AdminController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    print('AdminController: onInit called');
     // Initialize services after onInit
-    _databaseService = Get.find<DatabaseService>();
-    _cloudinaryService = Get.find<CloudinaryService>();
-    loadData();
+    try {
+      _databaseService = Get.find<DatabaseService>();
+      _cloudinaryService = Get.find<CloudinaryService>();
+      print('AdminController: Services initialized');
+      loadData();
+    } catch (e) {
+      print('AdminController: Error initializing services: $e');
+    }
   }
 
   @override
@@ -92,35 +98,132 @@ class AdminController extends GetxController {
   }
 
   Future<void> loadData() async {
-    isLoading.value = true;
+    try {
+      print('AdminController: Starting to load data...');
+      isLoading.value = true;
 
-    // Load initial data
-    await loadServices();
-    await loadBookings();
-    await loadParts();
-    await loadProducts();
+      // Load data concurrently for better performance
+      await Future.wait([
+        loadServices(),
+        loadBookings(),
+        loadParts(),
+        loadProducts(),
+      ]);
 
-    isLoading.value = false;
+      print(
+          'AdminController: Data loaded - Services: ${services.length}, Bookings: ${bookings.length}, Parts: ${parts.length}');
+
+      // Temporarily disable real-time listeners to debug
+      // _setupRealtimeListeners();
+    } catch (e) {
+      print('AdminController: Error loading data: $e');
+      Get.snackbar(
+        'Error',
+        'Failed to load data: $e',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+      );
+    } finally {
+      isLoading.value = false;
+      print('AdminController: Load data completed');
+    }
+  }
+
+  void _setupRealtimeListeners() {
+    // Listen for real-time updates
+    _databaseService.getServicesStream().listen((event) {
+      if (event.snapshot.exists) {
+        final data = event.snapshot.value as Map<dynamic, dynamic>;
+        final serviceList = data.entries
+            .map((entry) =>
+                ServiceModel.fromJson(Map<String, dynamic>.from(entry.value)))
+            .toList();
+        services.assignAll(serviceList);
+      }
+    });
+
+    _databaseService.getBookingsStream().listen((event) {
+      if (event.snapshot.exists) {
+        final data = event.snapshot.value as Map<dynamic, dynamic>;
+        final bookingList = data.entries
+            .map((entry) =>
+                BookingModel.fromJson(Map<String, dynamic>.from(entry.value)))
+            .toList();
+        bookings.assignAll(bookingList);
+      }
+    });
+
+    _databaseService.getPartsStream().listen((event) {
+      if (event.snapshot.exists) {
+        final data = event.snapshot.value as Map<dynamic, dynamic>;
+        final partList = data.entries
+            .map((entry) =>
+                PartModel.fromJson(Map<String, dynamic>.from(entry.value)))
+            .toList();
+        parts.assignAll(partList);
+      }
+    });
   }
 
   Future<void> loadServices() async {
-    final serviceList = await _databaseService.getAllServices();
-    services.assignAll(serviceList);
+    try {
+      final serviceList = await _databaseService.getAllServices();
+      services.assignAll(serviceList);
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to load services: $e',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+      );
+    }
   }
 
   Future<void> loadBookings() async {
-    final bookingList = await _databaseService.getAllBookings();
-    bookings.assignAll(bookingList);
+    try {
+      final bookingList = await _databaseService.getAllBookings();
+      bookings.assignAll(bookingList);
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to load bookings: $e',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+      );
+    }
   }
 
   Future<void> loadParts() async {
-    final partList = await _databaseService.getAllParts();
-    parts.assignAll(partList.map((data) => PartModel.fromJson(data)));
+    try {
+      final partList = await _databaseService.getAllParts();
+      parts.assignAll(partList.map((data) => PartModel.fromJson(data)));
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to load parts: $e',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+      );
+    }
   }
 
   Future<void> loadProducts() async {
-    // For now, return empty list as products are not implemented in DatabaseService
-    products.clear();
+    try {
+      // For now, return empty list as products are not implemented in DatabaseService
+      products.clear();
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to load products: $e',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+      );
+    }
   }
 
   // Image management methods
@@ -185,37 +288,50 @@ class AdminController extends GetxController {
         priceController.text.isEmpty ||
         _selectedCategory.value.isEmpty) {
       Get.snackbar(
-          'Error', 'Please fill all required fields including category');
+          'Error', 'Please fill all required fields including category',
+          backgroundColor: Colors.orange,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.TOP);
       return;
     }
 
-    // Upload images if any selected
-    if (selectedImages.isNotEmpty) {
-      final success = await uploadSelectedImages(folder: 'service_images');
-      if (!success) return;
+    try {
+      // Upload images if any selected
+      if (selectedImages.isNotEmpty) {
+        final success = await uploadSelectedImages(folder: 'service_images');
+        if (!success) return;
+      }
+
+      final service = ServiceModel(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        name: nameController.text,
+        description: descriptionController.text,
+        images: uploadedImageUrls.isEmpty ? [''] : uploadedImageUrls,
+        thumbnailImages: uploadedImageUrls
+            .map((url) => _cloudinaryService.getThumbnailUrl(url,
+                width: 200, height: 200))
+            .toList(),
+        duration: durationController.text,
+        price: double.tryParse(priceController.text) ?? 0.0,
+        technicianName: technicianController.text,
+        category: _selectedCategory.value,
+        categoryId: _selectedCategory.value,
+        createdAt: DateTime.now(),
+      );
+
+      await _databaseService.addService(service);
+      clearServiceForm();
+      Get.back();
+      Get.snackbar('Success', 'Service added successfully',
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.TOP);
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to add service: $e',
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.TOP);
     }
-
-    final service = ServiceModel(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      name: nameController.text,
-      description: descriptionController.text,
-      images: uploadedImageUrls.isEmpty ? [''] : uploadedImageUrls,
-      thumbnailImages: uploadedImageUrls
-          .map((url) =>
-              _cloudinaryService.getThumbnailUrl(url, width: 200, height: 200))
-          .toList(),
-      duration: durationController.text,
-      price: double.tryParse(priceController.text) ?? 0.0,
-      technicianName: technicianController.text,
-      category: _selectedCategory.value,
-      categoryId: _selectedCategory.value,
-      createdAt: DateTime.now(),
-    );
-
-    services.add(service);
-    _databaseService.addService(service);
-    clearServiceForm();
-    Get.snackbar('Success', 'Service added successfully');
   }
 
   void updateService(ServiceModel service) {
