@@ -60,6 +60,7 @@ class CloudinaryService extends GetxService {
   // Pick image from gallery
   Future<File?> pickImageFromGallery() async {
     try {
+      print('Attempting to pick image from gallery...');
       final XFile? pickedFile = await _imagePicker.pickImage(
         source: ImageSource.gallery,
         maxWidth: 1920,
@@ -68,13 +69,17 @@ class CloudinaryService extends GetxService {
       );
 
       if (pickedFile != null) {
+        print('Image picked from gallery: ${pickedFile.path}');
         return File(pickedFile.path);
       }
+      print('No image selected from gallery');
       return null;
     } catch (e) {
+      print('Error picking image from gallery: $e');
+      print('Stack trace: ${StackTrace.current}');
       Get.snackbar(
         'Error',
-        'Failed to pick image: $e',
+        'Failed to pick image from gallery: $e',
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
@@ -85,6 +90,7 @@ class CloudinaryService extends GetxService {
   // Pick image from camera
   Future<File?> pickImageFromCamera() async {
     try {
+      print('Attempting to pick image from camera...');
       final XFile? pickedFile = await _imagePicker.pickImage(
         source: ImageSource.camera,
         maxWidth: 1920,
@@ -93,10 +99,14 @@ class CloudinaryService extends GetxService {
       );
 
       if (pickedFile != null) {
+        print('Image captured from camera: ${pickedFile.path}');
         return File(pickedFile.path);
       }
+      print('No image captured from camera');
       return null;
     } catch (e) {
+      print('Error picking image from camera: $e');
+      print('Stack trace: ${StackTrace.current}');
       Get.snackbar(
         'Error',
         'Failed to capture image: $e',

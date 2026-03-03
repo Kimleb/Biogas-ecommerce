@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import '../controllers/admin_controller.dart';
 import '../../../routes/app_pages.dart';
 import '../../../data/services/cloudinary_service.dart';
+import '../../../data/services/auth_service.dart';
 
 extension HorizontalSpace on double {
   SizedBox get horizontalSpace => SizedBox(width: this);
@@ -112,27 +113,30 @@ class AdminDashboardView extends GetView<AdminController> {
                   ),
                 ],
               ),
-              Container(
-                padding: EdgeInsets.all(16.w),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(16.r),
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.25),
-                    width: 1,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 10,
-                      offset: Offset(0, 4),
+              GestureDetector(
+                onTap: () => _showLogoutDialog(),
+                child: Container(
+                  padding: EdgeInsets.all(16.w),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(16.r),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.25),
+                      width: 1,
                     ),
-                  ],
-                ),
-                child: Icon(
-                  Icons.dashboard_rounded,
-                  color: Colors.white,
-                  size: 28.sp,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 10,
+                        offset: Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    Icons.logout_rounded,
+                    color: Colors.white,
+                    size: 28.sp,
+                  ),
                 ),
               ),
             ],
@@ -463,13 +467,26 @@ class AdminDashboardView extends GetView<AdminController> {
           children: [
             Expanded(
               child: _buildQuickActionButton(
+                'Test Image Picker',
+                Icons.image_search_outlined,
+                Color(0xFFE91E63),
+                () => controller.testImagePicker(),
+              ),
+            ),
+            12.horizontalSpace,
+            Expanded(
+              child: _buildQuickActionButton(
                 'Export Data',
                 Icons.download_outlined,
                 Color(0xFFFF9800),
                 () => Get.toNamed(Routes.ADMIN_SERVICES),
               ),
             ),
-            12.horizontalSpace,
+          ],
+        ),
+        12.verticalSpace,
+        Row(
+          children: [
             Expanded(
               child: _buildQuickActionButton(
                 'Settings',
@@ -477,6 +494,10 @@ class AdminDashboardView extends GetView<AdminController> {
                 Color(0xFF607D8B),
                 () => _showSettingsDialog(),
               ),
+            ),
+            12.horizontalSpace,
+            Expanded(
+              child: SizedBox(), // Empty placeholder
             ),
           ],
         ),
@@ -487,6 +508,102 @@ class AdminDashboardView extends GetView<AdminController> {
   void _testCloudinaryConfig() {
     final cloudinaryService = Get.find<CloudinaryService>();
     cloudinaryService.testConfiguration();
+  }
+
+  void _showLogoutDialog() {
+    Get.dialog(
+      Dialog(
+        child: Container(
+          padding: EdgeInsets.all(20.w),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(12.w),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    child: Icon(
+                      Icons.logout_rounded,
+                      color: Colors.red,
+                      size: 24.sp,
+                    ),
+                  ),
+                  16.horizontalSpace,
+                  Text(
+                    'Logout',
+                    style: TextStyle(
+                      fontSize: 20.sp,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ],
+              ),
+              16.verticalSpace,
+              Text(
+                'Are you sure you want to logout from the admin dashboard?',
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  color: Colors.grey[600],
+                ),
+              ),
+              24.verticalSpace,
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Get.back(),
+                      style: OutlinedButton.styleFrom(
+                        padding: EdgeInsets.symmetric(vertical: 12.h),
+                        side: BorderSide(color: Colors.grey.shade300),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.r),
+                        ),
+                      ),
+                      child: Text(
+                        'Cancel',
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
+                  16.horizontalSpace,
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        Get.back(); // Close dialog
+                        await AuthService.to.signOut(); // Logout
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        foregroundColor: Colors.white,
+                        padding: EdgeInsets.symmetric(vertical: 12.h),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.r),
+                        ),
+                      ),
+                      child: Text(
+                        'Logout',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   void _showDebugInfo() {
