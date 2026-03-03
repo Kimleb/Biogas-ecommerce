@@ -8,8 +8,6 @@ import '../../../data/models/category_model.dart';
 import '../../../data/models/service_model.dart';
 import '../../../data/services/auth_service.dart';
 import '../../../data/services/database_service.dart';
-import '../../admin/views/admin_dashboard_view.dart';
-import '../../admin/bindings/admin_binding.dart';
 
 class HomeController extends GetxController {
   // to hold categories & services
@@ -62,14 +60,6 @@ class HomeController extends GetxController {
 
   /// Navigate to admin dashboard
   void goToAdminDashboard() {
-    print('Admin button clicked - attempting navigation');
-    try {
-      Get.to(() => const AdminDashboardView(), binding: AdminBinding());
-      print('Navigation command sent');
-    } catch (e) {
-      print('Navigation error: $e');
-      Get.snackbar(
-          'Navigation Error', 'Could not navigate to admin dashboard: $e');
-    }
+    Get.toNamed('/admin/dashboard');
   }
 }

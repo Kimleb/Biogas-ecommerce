@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../models/user_model.dart';
+import '../../routes/app_pages.dart';
 
 class AuthService extends GetxService {
   static AuthService get to => Get.find();
@@ -51,7 +52,7 @@ class AuthService extends GetxService {
 
   _setInitialScreen(User? user) async {
     if (user == null) {
-      Get.offAllNamed('/login');
+      Get.offAllNamed(Routes.LOGIN);
     } else {
       await _loadUserData(user.uid);
 
@@ -60,7 +61,7 @@ class AuthService extends GetxService {
         final result = await _showUserDetailsDialog(user);
         if (result != null) {
           _currentUser.value = result;
-          Get.offAllNamed('/base');
+          Get.offAllNamed(isAdmin ? Routes.ADMIN_DASHBOARD : Routes.BASE);
         } else {
           // User cancelled the details dialog, sign them out
           await _auth.signOut();
@@ -69,7 +70,7 @@ class AuthService extends GetxService {
           }
         }
       } else {
-        Get.offAllNamed('/base');
+        Get.offAllNamed(isAdmin ? Routes.ADMIN_DASHBOARD : Routes.BASE);
       }
     }
   }

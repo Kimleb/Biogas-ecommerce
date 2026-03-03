@@ -51,12 +51,7 @@ class AuthController extends GetxController {
       );
 
       if (success) {
-        // Check if user is admin and redirect accordingly
-        if (AuthService.to.isAdmin) {
-          Get.offAllNamed('/admin/dashboard');
-        } else {
-          Get.offAllNamed('/base');
-        }
+        // Navigation is handled by AuthService authState listener
       }
     } catch (e) {
       Get.snackbar(
@@ -94,12 +89,7 @@ class AuthController extends GetxController {
       );
 
       if (success) {
-        // Check if user is admin and redirect accordingly
-        if (AuthService.to.isAdmin) {
-          Get.offAllNamed('/admin/dashboard');
-        } else {
-          Get.offAllNamed('/base');
-        }
+        // Navigation is handled by AuthService authState listener
       }
     } catch (e) {
       Get.snackbar(
@@ -129,12 +119,7 @@ class AuthController extends GetxController {
       final success = await AuthService.to.signInWithGoogle();
 
       if (success) {
-        // Check if user is admin and redirect accordingly
-        if (AuthService.to.isAdmin) {
-          Get.offAllNamed('/admin/dashboard');
-        } else {
-          Get.offAllNamed('/base');
-        }
+        // Navigation is handled by AuthService authState listener
       }
     } catch (e) {
       Get.snackbar(

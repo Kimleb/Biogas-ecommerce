@@ -1,7 +1,10 @@
 import 'package:get/get.dart';
 
 import '../modules/admin/bindings/admin_binding.dart';
+import '../modules/admin/views/admin_bookings_view.dart';
 import '../modules/admin/views/admin_dashboard_view.dart';
+import '../modules/admin/views/admin_parts_view.dart';
+import '../modules/admin/views/admin_services_view.dart';
 import '../modules/auth/bindings/auth_binding.dart';
 import '../modules/auth/views/login_view.dart';
 import '../modules/auth/views/signup_view.dart';
@@ -109,6 +112,24 @@ class AppPages {
     GetPage(
       name: _Paths.ADMIN_DASHBOARD,
       page: () => const AdminDashboardView(),
+      binding: AdminBinding(),
+      middlewares: [AdminMiddleware()],
+    ),
+    GetPage(
+      name: _Paths.ADMIN_SERVICES,
+      page: () => const AdminServicesView(),
+      binding: AdminBinding(),
+      middlewares: [AdminMiddleware()],
+    ),
+    GetPage(
+      name: _Paths.ADMIN_BOOKINGS,
+      page: () => const AdminBookingsView(),
+      binding: AdminBinding(),
+      middlewares: [AdminMiddleware()],
+    ),
+    GetPage(
+      name: _Paths.ADMIN_PARTS,
+      page: () => const AdminPartsView(),
       binding: AdminBinding(),
       middlewares: [AdminMiddleware()],
     ),

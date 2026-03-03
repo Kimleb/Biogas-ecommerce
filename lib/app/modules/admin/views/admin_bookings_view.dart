@@ -1,4 +1,3 @@
-import 'package:biogas_technician_app/app/data/models/booking_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -193,7 +192,7 @@ class AdminBookingsView extends GetView<AdminController> {
                           Expanded(
                             child: ElevatedButton(
                               onPressed: () => controller.updateBookingStatus(
-                                  booking.id as BookingModel, 'confirmed'),
+                                  booking, 'confirmed'),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.green,
                                 minimumSize: Size(double.infinity, 36.h),
@@ -206,7 +205,7 @@ class AdminBookingsView extends GetView<AdminController> {
                           Expanded(
                             child: OutlinedButton(
                               onPressed: () => controller.updateBookingStatus(
-                                  booking.id as BookingModel, 'cancelled'),
+                                  booking, 'cancelled'),
                               style: OutlinedButton.styleFrom(
                                 side: BorderSide(color: Colors.red),
                                 minimumSize: Size(double.infinity, 36.h),
@@ -220,7 +219,7 @@ class AdminBookingsView extends GetView<AdminController> {
                           Expanded(
                             child: ElevatedButton(
                               onPressed: () => controller.updateBookingStatus(
-                                  booking.id as BookingModel, 'completed'),
+                                  booking, 'completed'),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Color(0xFFFF8C00),
                                 minimumSize: Size(double.infinity, 36.h),
@@ -233,7 +232,7 @@ class AdminBookingsView extends GetView<AdminController> {
                           Expanded(
                             child: OutlinedButton(
                               onPressed: () => controller.updateBookingStatus(
-                                  booking.id as BookingModel, 'cancelled'),
+                                  booking, 'cancelled'),
                               style: OutlinedButton.styleFrom(
                                 side: BorderSide(color: Colors.red),
                                 minimumSize: Size(double.infinity, 36.h),

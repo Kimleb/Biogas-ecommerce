@@ -9,8 +9,6 @@ class AdminServicesView extends GetView<AdminController> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = context.theme;
-
     return Scaffold(
       backgroundColor: Color(0xFFF8F9FA),
       appBar: AppBar(
@@ -60,7 +58,8 @@ class AdminServicesView extends GetView<AdminController> {
             return Card(
               margin: EdgeInsets.only(bottom: 12.h),
               elevation: 4,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.r)),
               child: ListTile(
                 contentPadding: EdgeInsets.all(16.w),
                 leading: Container(
@@ -70,24 +69,21 @@ class AdminServicesView extends GetView<AdminController> {
                     color: Color(0xFF4CAF50).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12.r),
                   ),
-                  child: service.primaryImage != null && service.primaryImage!.isNotEmpty
+                  child: service.primaryImage != null &&
+                          service.primaryImage!.isNotEmpty
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(12.r),
                           child: Image.network(
                             service.primaryImage!,
                             fit: BoxFit.cover,
                             errorBuilder: (context, error, stackTrace) {
-                              return Icon(Icons.eco_rounded, 
-                                color: Color(0xFF4CAF50), 
-                                size: 30.w
-                              );
+                              return Icon(Icons.eco_rounded,
+                                  color: Color(0xFF4CAF50), size: 30.w);
                             },
                           ),
                         )
-                      : Icon(Icons.eco_rounded, 
-                        color: Color(0xFF4CAF50), 
-                        size: 30.w
-                      ),
+                      : Icon(Icons.eco_rounded,
+                          color: Color(0xFF4CAF50), size: 30.w),
                 ),
                 title: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -101,7 +97,8 @@ class AdminServicesView extends GetView<AdminController> {
                     ),
                     8.verticalSpace,
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                       decoration: BoxDecoration(
                         color: Color(0xFFFF8C00).withOpacity(0.1),
                         borderRadius: BorderRadius.circular(8.r),
@@ -118,13 +115,15 @@ class AdminServicesView extends GetView<AdminController> {
                     if (service.category != null) ...[
                       4.verticalSpace,
                       Container(
-                        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 8.w, vertical: 4.h),
                         decoration: BoxDecoration(
                           color: Colors.blue.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(8.r),
                         ),
                         child: Text(
-                          service.category![0].toUpperCase() + service.category!.substring(1),
+                          service.category![0].toUpperCase() +
+                              service.category!.substring(1),
                           style: TextStyle(
                             fontSize: 12.sp,
                             color: Colors.blue,

@@ -16,18 +16,15 @@ class DatabaseService extends GetxService {
   // CRUD Operations for Services
   Future<void> addService(ServiceModel service) async {
     try {
-      await servicesRef.child(service.id.toString()).set({
-        'id': service.id,
-        'name': service.name,
-        'description': service.description,
-        'price': service.price,
-        'duration': service.duration,
-        'image': service.primaryImage,
-        'technicianId': service.technicianId,
-        'technicianName': service.technicianName,
-        'rating': service.rating,
-        'createdAt': DateTime.now().millisecondsSinceEpoch,
-      });
+      final now = DateTime.now();
+      await servicesRef.child(service.id.toString()).set(
+            service
+                .copyWith(
+                  createdAt: service.createdAt ?? now,
+                  updatedAt: service.updatedAt ?? now,
+                )
+                .toJson(),
+          );
     } catch (e) {
       print('Error adding service: $e');
       rethrow;
@@ -36,17 +33,10 @@ class DatabaseService extends GetxService {
 
   Future<void> updateService(ServiceModel service) async {
     try {
-      await servicesRef.child(service.id.toString()).update({
-        'name': service.name,
-        'description': service.description,
-        'price': service.price,
-        'duration': service.duration,
-        'image': service.primaryImage,
-        'technicianId': service.technicianId,
-        'technicianName': service.technicianName,
-        'rating': service.rating,
-        'updatedAt': DateTime.now().millisecondsSinceEpoch,
-      });
+      final now = DateTime.now();
+      await servicesRef.child(service.id.toString()).update(
+            service.copyWith(updatedAt: now).toJson(),
+          );
     } catch (e) {
       print('Error updating service: $e');
       rethrow;
@@ -138,7 +128,7 @@ class DatabaseService extends GetxService {
   Future<List<BookingModel>> getUserBookings(String userId) async {
     try {
       final snapshot =
-          await bookingsRef.orderByChild('userId').equalTo(userId).get();
+          await bookingsRef.orderByChild('customerId').equalTo(userId).get();
       List<BookingModel> bookings = [];
       if (snapshot.exists) {
         final data = snapshot.value as Map<dynamic, dynamic>;
