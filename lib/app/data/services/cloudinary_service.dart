@@ -9,11 +9,20 @@ class CloudinaryService extends GetxService {
 
   final ImagePicker _imagePicker = ImagePicker();
 
-  // Cloudinary configuration - replace with your actual credentials
-  static const String cloudName = 'Root';
-  static const String apiKey = '429824777814863';
-  static const String apiSecret = 'f6y6PSACADNkk3ivJQiZjzUPOF4';
-  static const String uploadPreset = 'biogas_app'; // Create this in your Cloudinary dashboard
+  // Cloudinary configuration
+  // NOTE: Do NOT store secrets (apiSecret) in a client app.
+  // Use unsigned uploads with an upload preset, or proxy uploads through your backend.
+  static const String cloudName = String.fromEnvironment(
+    'CLOUDINARY_CLOUD_NAME',
+    defaultValue: '',
+  );
+
+  static const String uploadPreset = String.fromEnvironment(
+    'CLOUDINARY_UPLOAD_PRESET',
+    defaultValue: '',
+  );
+
+  bool get isConfigured => cloudName.isNotEmpty && uploadPreset.isNotEmpty;
 
   @override
   void onInit() {
@@ -72,8 +81,19 @@ class CloudinaryService extends GetxService {
   }
 
   // Upload image to Cloudinary using HTTP request
-  Future<String?> uploadImage(File imageFile, {String folder = 'biogas_app'}) async {
+  Future<String?> uploadImage(File imageFile,
+      {String folder = 'biogas_app'}) async {
     try {
+      if (!isConfigured) {
+        Get.snackbar(
+          'Configuration Error',
+          'Cloudinary is not configured. Please set CLOUDINARY_CLOUD_NAME and CLOUDINARY_UPLOAD_PRESET.',
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+        return null;
+      }
+
       Get.snackbar(
         'Uploading',
         'Please wait while we upload your image...',
@@ -107,7 +127,8 @@ class CloudinaryService extends GetxService {
 
       if (response.statusCode == 200) {
         // Parse response (simple parsing for secure_url)
-        final urlMatch = RegExp(r'"secure_url":"([^"]+)"').firstMatch(responseBody);
+        final urlMatch =
+            RegExp(r'"secure_url":"([^"]+)"').firstMatch(responseBody);
         if (urlMatch != null) {
           final secureUrl = urlMatch.group(1)?.replaceAll(r'\/', '/');
           if (secureUrl != null) {
@@ -136,7 +157,8 @@ class CloudinaryService extends GetxService {
   }
 
   // Upload multiple images
-  Future<List<String>> uploadMultipleImages(List<File> imageFiles, {String folder = 'biogas_app'}) async {
+  Future<List<String>> uploadMultipleImages(List<File> imageFiles,
+      {String folder = 'biogas_app'}) async {
     List<String> uploadedUrls = [];
 
     for (File imageFile in imageFiles) {
@@ -150,7 +172,8 @@ class CloudinaryService extends GetxService {
   }
 
   // Get optimized image URL (basic transformation)
-  String getOptimizedImageUrl(String publicId, {int width = 800, int height = 600}) {
+  String getOptimizedImageUrl(String publicId,
+      {int width = 800, int height = 600}) {
     return 'https://res.cloudinary.com/$cloudName/image/fetch/w_$width,h_$height,q_auto,f_auto/$publicId';
   }
 

@@ -2,6 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import '../controllers/admin_controller.dart';
+import '../../../routes/app_pages.dart';
+
+extension HorizontalSpace on double {
+  SizedBox get horizontalSpace => SizedBox(width: this);
+}
+
+extension VerticalSpace on double {
+  SizedBox get verticalSpace => SizedBox(height: this);
+}
 
 class AdminDashboardView extends GetView<AdminController> {
   const AdminDashboardView({Key? key}) : super(key: key);
@@ -137,42 +146,25 @@ class AdminDashboardView extends GetView<AdminController> {
 
           16.verticalSpace,
 
-          // Content Section
+          // Hint Section
           Expanded(
-            child: Container(
-              child: Obx(() {
-                if (controller.isLoading.value) {
-                  return Center(
-                      child:
-                          CircularProgressIndicator(color: Color(0xFFFF8C00)));
-                }
-
-                switch (controller.selectedTab.value) {
-                  case 0:
-                    return _buildServicesTab();
-                  case 1:
-                    return _buildBookingsTab();
-                  case 2:
-                    return _buildPartsTab();
-                  default:
-                    return _buildServicesTab();
-                }
-              }),
+            child: Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 24.w),
+                child: Text(
+                  'Use the tabs above to open management pages.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
             ),
           ),
         ],
       ),
-      floatingActionButton: Obx(() {
-        if (controller.selectedTab.value == 0) {
-          return FloatingActionButton.extended(
-            onPressed: () => controller.showAddServiceDialog(),
-            backgroundColor: Color(0xFFFF8C00),
-            icon: Icon(Icons.add, color: Colors.white),
-            label: Text('Add Service', style: TextStyle(color: Colors.white)),
-          );
-        }
-        return SizedBox.shrink();
-      }),
     );
   }
 
@@ -323,7 +315,7 @@ class AdminDashboardView extends GetView<AdminController> {
                 'Export Data',
                 Icons.download_outlined,
                 Color(0xFFFF9800),
-                () => _exportData(),
+                () => Get.toNamed(Routes.ADMIN_SERVICES),
               ),
             ),
             12.horizontalSpace,
@@ -407,10 +399,18 @@ class AdminDashboardView extends GetView<AdminController> {
   }
 
   Widget _buildModernTab(String title, int index, IconData icon) {
-    final isSelected = controller.selectedTab.value == index;
+    final isSelected = false;
     return Expanded(
       child: GestureDetector(
-        onTap: () => controller.changeTab(index),
+        onTap: () {
+          if (index == 0) {
+            Get.toNamed(Routes.ADMIN_SERVICES);
+          } else if (index == 1) {
+            Get.toNamed(Routes.ADMIN_BOOKINGS);
+          } else if (index == 2) {
+            Get.toNamed(Routes.ADMIN_PARTS);
+          }
+        },
         child: Container(
           padding: EdgeInsets.symmetric(vertical: 16.h),
           decoration: BoxDecoration(
