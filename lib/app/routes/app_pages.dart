@@ -11,7 +11,9 @@ import '../modules/auth/views/signup_view.dart';
 import '../modules/base/bindings/base_binding.dart';
 import '../modules/base/views/base_view.dart';
 import '../modules/booking/bindings/booking_binding.dart';
+import '../modules/booking/bindings/booking_history_binding.dart';
 import '../modules/booking/views/booking_view.dart';
+import '../modules/booking/views/booking_history_view.dart';
 import '../modules/calendar/bindings/calendar_binding.dart';
 import '../modules/calendar/views/calendar_view.dart';
 import '../modules/cart/bindings/cart_binding.dart';
@@ -106,6 +108,13 @@ class AppPages {
       name: _Paths.BOOKING,
       page: () => const BookingView(),
       binding: BookingBinding(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 250),
+    ),
+    GetPage(
+      name: _Paths.BOOKING_HISTORY,
+      page: () => const BookingHistoryView(),
+      binding: BookingHistoryBinding(),
       transition: Transition.rightToLeft,
       transitionDuration: const Duration(milliseconds: 250),
     ),

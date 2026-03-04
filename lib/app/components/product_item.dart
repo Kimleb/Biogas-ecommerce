@@ -7,7 +7,6 @@ import '../data/models/service_model.dart';
 import '../modules/cart/controllers/cart_controller.dart';
 import '../modules/base/controllers/base_controller.dart';
 import '../routes/app_pages.dart';
-import '../../utils/dummy_helper.dart';
 
 // Extension for horizontal space
 extension HorizontalSpace on double {
@@ -27,25 +26,8 @@ class ServiceItem extends StatelessWidget {
 
     final cartController = Get.find<CartController>();
 
-    // Find if service already exists in dummy products
-    var existingProduct = DummyHelper.products.firstWhere(
-      (p) => p['id'] == service.id,
-      orElse: () => {
-        'id': service.id,
-        'image': service.images,
-        'name': service.name,
-        'quantity': 0,
-        'price': service.price,
-        'description': service.description,
-      },
-    );
-
-    // Update quantity
-    existingProduct['quantity'] =
-        (existingProduct['quantity'] as int? ?? 0) + 1;
-
-    // Refresh cart
-    cartController.getCartProducts();
+    // Add service to cart using new system
+    cartController.onIncreasePressed(service.id);
 
     // Update cart badge if BaseController is registered
     if (Get.isRegistered<BaseController>()) {
@@ -54,12 +36,12 @@ class ServiceItem extends StatelessWidget {
 
     // Show success message
     Get.snackbar(
-      'Added to Cart 🛒',
-      '${service.name} added to your cart',
+      'Added to Cart',
+      '${service.name} has been added to your cart',
       backgroundColor: Colors.green,
       colorText: Colors.white,
-      duration: const Duration(seconds: 2),
       snackPosition: SnackPosition.TOP,
+      duration: Duration(seconds: 2),
     );
   }
 

@@ -14,7 +14,26 @@ class BookingController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    service = Get.arguments as ServiceModel;
+    final args = Get.arguments;
+    if (args is ServiceModel) {
+      service = args;
+    } else {
+      // Fallback to a default service or handle gracefully
+      service = ServiceModel(
+        id: 'default',
+        name: 'Unknown Service',
+        description: '',
+        images: [],
+        thumbnailImages: [],
+        duration: '30 min',
+        price: 0.0,
+        rating: 0.0,
+        isActive: true,
+      );
+      // Optionally log or show a message
+      print(
+          'Warning: No ServiceModel passed to BookingController, using fallback');
+    }
   }
 
   double get totalPrice {

@@ -10,6 +10,9 @@ import '../../../data/models/booking_model.dart' as booking;
 import '../../../data/models/part_model.dart';
 import '../../../data/models/product_model.dart';
 
+// Global navigator key for context access
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 // Extension for string capitalization
 extension StringExtension on String {
   String get capitalizeFirst {
@@ -59,10 +62,16 @@ class AdminController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    print('AdminController: onInit called');
     // Initialize services after onInit
-    _databaseService = Get.find<DatabaseService>();
-    _cloudinaryService = Get.find<CloudinaryService>();
-    loadData();
+    try {
+      _databaseService = Get.find<DatabaseService>();
+      _cloudinaryService = Get.find<CloudinaryService>();
+      print('AdminController: Services initialized');
+      loadData();
+    } catch (e) {
+      print('AdminController: Error initializing services: $e');
+    }
   }
 
   @override
@@ -92,47 +101,216 @@ class AdminController extends GetxController {
   }
 
   Future<void> loadData() async {
-    isLoading.value = true;
+    try {
+      print('AdminController: Starting to load data...');
+      isLoading.value = true;
 
-    // Load initial data
-    await loadServices();
-    await loadBookings();
-    await loadParts();
-    await loadProducts();
+      // Load data concurrently for better performance
+      await Future.wait([
+        loadServices(),
+        loadBookings(),
+        loadParts(),
+        loadProducts(),
+      ]);
 
-    isLoading.value = false;
+      print(
+          'AdminController: Data loaded - Services: ${services.length}, Bookings: ${bookings.length}, Parts: ${parts.length}');
+
+      // Temporarily disable real-time listeners to debug
+      // _setupRealtimeListeners();
+    } catch (e) {
+      print('AdminController: Error loading data: $e');
+      Get.snackbar(
+        'Error',
+        'Failed to load data: $e',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+      );
+    } finally {
+      isLoading.value = false;
+      print('AdminController: Load data completed');
+    }
+  }
+
+  void _setupRealtimeListeners() {
+    // Listen for real-time updates
+    _databaseService.getServicesStream().listen((event) {
+      if (event.snapshot.exists) {
+        final data = event.snapshot.value as Map<dynamic, dynamic>;
+        final serviceList = data.entries
+            .map((entry) =>
+                ServiceModel.fromJson(Map<String, dynamic>.from(entry.value)))
+            .toList();
+        services.assignAll(serviceList);
+      }
+    });
+
+    _databaseService.getBookingsStream().listen((event) {
+      if (event.snapshot.exists) {
+        final data = event.snapshot.value as Map<dynamic, dynamic>;
+        final bookingList = data.entries
+            .map((entry) =>
+                BookingModel.fromJson(Map<String, dynamic>.from(entry.value)))
+            .toList();
+        bookings.assignAll(bookingList);
+      }
+    });
+
+    _databaseService.getPartsStream().listen((event) {
+      if (event.snapshot.exists) {
+        final data = event.snapshot.value as Map<dynamic, dynamic>;
+        final partList = data.entries
+            .map((entry) =>
+                PartModel.fromJson(Map<String, dynamic>.from(entry.value)))
+            .toList();
+        parts.assignAll(partList);
+      }
+    });
   }
 
   Future<void> loadServices() async {
-    final serviceList = await _databaseService.getAllServices();
-    services.assignAll(serviceList);
+    try {
+      final serviceList = await _databaseService.getAllServices();
+      services.assignAll(serviceList);
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to load services: $e',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+      );
+    }
   }
 
   Future<void> loadBookings() async {
-    final bookingList = await _databaseService.getAllBookings();
-    bookings.assignAll(bookingList);
+    try {
+      final bookingList = await _databaseService.getAllBookings();
+      bookings.assignAll(bookingList);
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to load bookings: $e',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+      );
+    }
   }
 
   Future<void> loadParts() async {
-    final partList = await _databaseService.getAllParts();
-    parts.assignAll(partList.map((data) => PartModel.fromJson(data)));
+    try {
+      final partList = await _databaseService.getAllParts();
+      parts.assignAll(partList.map((data) => PartModel.fromJson(data)));
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to load parts: $e',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+      );
+    }
   }
 
   Future<void> loadProducts() async {
-    // For now, return empty list as products are not implemented in DatabaseService
-    products.clear();
+    try {
+      // For now, return empty list as products are not implemented in DatabaseService
+      products.clear();
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to load products: $e',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+      );
+    }
   }
 
   // Image management methods
   Future<void> pickImages() async {
     try {
-      final pickedFiles =
-          await _cloudinaryService.showImagePickerOptions(Get.context!);
-      if (pickedFiles != null) {
-        selectedImages.add(pickedFiles);
+      print('pickImages called - starting image selection process');
+
+      // Use Get.context with null safety
+      final context = Get.context;
+      if (context == null) {
+        print('ERROR: Get.context is null when trying to pick images');
+        Get.snackbar(
+            'Error', 'Unable to open image picker - context not available');
+        return;
       }
-    } catch (e) {
-      Get.snackbar('Error', 'Failed to pick image: $e');
+
+      print('Context available, calling showImagePickerOptions');
+      final pickedFiles =
+          await _cloudinaryService.showImagePickerOptions(context);
+
+      if (pickedFiles != null) {
+        print('Image selected successfully: ${pickedFiles.path}');
+        selectedImages.add(pickedFiles);
+        Get.snackbar('Success', 'Image selected successfully');
+      } else {
+        print('No image selected');
+      }
+    } catch (e, stackTrace) {
+      print('CRITICAL ERROR in pickImages: $e');
+      print('Stack trace: $stackTrace');
+      Get.snackbar('Error', 'Failed to pick image: ${e.toString()}');
+    }
+  }
+
+  // Context-aware version for use in dialogs
+  Future<void> pickImagesWithContext(BuildContext context) async {
+    try {
+      print('pickImagesWithContext called with valid context');
+
+      final pickedFiles =
+          await _cloudinaryService.showImagePickerOptions(context);
+
+      if (pickedFiles != null) {
+        print('Image selected successfully: ${pickedFiles.path}');
+        selectedImages.add(pickedFiles);
+        Get.snackbar('Success', 'Image selected successfully');
+      } else {
+        print('No image selected');
+      }
+    } catch (e, stackTrace) {
+      print('CRITICAL ERROR in pickImagesWithContext: $e');
+      print('Stack trace: $stackTrace');
+      Get.snackbar('Error', 'Failed to pick image: ${e.toString()}');
+    }
+  }
+
+  // Simple test method to isolate the issue
+  Future<void> testImagePicker() async {
+    try {
+      print('TEST: Starting simple image picker test');
+
+      // Try to get context from current overlay
+      final context = Get.context;
+      if (context == null) {
+        print('TEST ERROR: No context available');
+        Get.snackbar('Test Error', 'No context available for testing');
+        return;
+      }
+
+      print('TEST: Context available, testing image picker...');
+      final result = await _cloudinaryService.showImagePickerOptions(context);
+
+      if (result != null) {
+        print('TEST SUCCESS: Image picked - ${result.path}');
+        Get.snackbar(
+            'Test Success', 'Image picker works! File: ${result.path}');
+      } else {
+        print('TEST INFO: No image selected (user cancelled)');
+        Get.snackbar('Test Info', 'No image selected - user cancelled');
+      }
+    } catch (e, stackTrace) {
+      print('TEST CRITICAL ERROR: $e');
+      print('TEST Stack trace: $stackTrace');
+      Get.snackbar('Test Error', 'Image picker failed: ${e.toString()}');
     }
   }
 
@@ -185,37 +363,50 @@ class AdminController extends GetxController {
         priceController.text.isEmpty ||
         _selectedCategory.value.isEmpty) {
       Get.snackbar(
-          'Error', 'Please fill all required fields including category');
+          'Error', 'Please fill all required fields including category',
+          backgroundColor: Colors.orange,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.TOP);
       return;
     }
 
-    // Upload images if any selected
-    if (selectedImages.isNotEmpty) {
-      final success = await uploadSelectedImages(folder: 'service_images');
-      if (!success) return;
+    try {
+      // Upload images if any selected
+      if (selectedImages.isNotEmpty) {
+        final success = await uploadSelectedImages(folder: 'service_images');
+        if (!success) return;
+      }
+
+      final service = ServiceModel(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        name: nameController.text,
+        description: descriptionController.text,
+        images: uploadedImageUrls.isEmpty ? [''] : uploadedImageUrls,
+        thumbnailImages: uploadedImageUrls
+            .map((url) => _cloudinaryService.getThumbnailUrl(url,
+                width: 200, height: 200))
+            .toList(),
+        duration: durationController.text,
+        price: double.tryParse(priceController.text) ?? 0.0,
+        technicianName: technicianController.text,
+        category: _selectedCategory.value,
+        categoryId: _selectedCategory.value,
+        createdAt: DateTime.now(),
+      );
+
+      await _databaseService.addService(service);
+      clearServiceForm();
+      Get.back();
+      Get.snackbar('Success', 'Service added successfully',
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.TOP);
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to add service: $e',
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.TOP);
     }
-
-    final service = ServiceModel(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      name: nameController.text,
-      description: descriptionController.text,
-      images: uploadedImageUrls.isEmpty ? [''] : uploadedImageUrls,
-      thumbnailImages: uploadedImageUrls
-          .map((url) =>
-              _cloudinaryService.getThumbnailUrl(url, width: 200, height: 200))
-          .toList(),
-      duration: durationController.text,
-      price: double.tryParse(priceController.text) ?? 0.0,
-      technicianName: technicianController.text,
-      category: _selectedCategory.value,
-      categoryId: _selectedCategory.value,
-      createdAt: DateTime.now(),
-    );
-
-    services.add(service);
-    _databaseService.addService(service);
-    clearServiceForm();
-    Get.snackbar('Success', 'Service added successfully');
   }
 
   void updateService(ServiceModel service) {
@@ -438,354 +629,350 @@ class AdminController extends GetxController {
   void showAddServiceDialog() {
     Get.dialog(
       Dialog(
-        child: Container(
-          width: Get.width * 0.9,
-          constraints: BoxConstraints(maxHeight: Get.height * 0.85),
-          child: Padding(
-            padding: EdgeInsets.all(20.w),
+        child: Builder(
+          builder: (context) => Container(
+            width: Get.width * 0.9,
+            constraints: BoxConstraints(maxHeight: Get.height * 0.85),
+            child: Padding(
+              padding: EdgeInsets.all(20.w),
+              child: _buildAddServiceDialogContent(context),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAddServiceDialogContent(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Header
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Add New Service',
+              style: TextStyle(
+                fontSize: 18.sp,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            IconButton(
+              onPressed: () {
+                Get.back();
+                clearServiceForm();
+              },
+              icon: Icon(Icons.close),
+            ),
+          ],
+        ),
+        16.verticalSpace,
+
+        // Form Content
+        Expanded(
+          child: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Header
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Add New Service',
-                      style: TextStyle(
-                        fontSize: 18.sp,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () {
-                        Get.back();
-                        clearServiceForm();
-                      },
-                      icon: Icon(Icons.close),
-                    ),
-                  ],
-                ),
-                16.verticalSpace,
-
-                // Form Content
-                Expanded(
-                  child: SingleChildScrollView(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // Service Name
-                        TextField(
-                          controller: nameController,
-                          decoration: InputDecoration(
-                            labelText: 'Service Name',
-                            border: OutlineInputBorder(),
-                            prefixIcon: Icon(Icons.eco_rounded),
-                          ),
-                        ),
-                        16.verticalSpace,
-
-                        // Description
-                        TextField(
-                          controller: descriptionController,
-                          decoration: InputDecoration(
-                            labelText: 'Description',
-                            border: OutlineInputBorder(),
-                            prefixIcon: Icon(Icons.description),
-                          ),
-                          maxLines: 3,
-                        ),
-                        16.verticalSpace,
-
-                        // Price and Duration Row
-                        Row(
-                          children: [
-                            Expanded(
-                              child: TextField(
-                                controller: priceController,
-                                decoration: InputDecoration(
-                                  labelText: 'Price',
-                                  border: OutlineInputBorder(),
-                                  prefixIcon: Icon(Icons.attach_money),
-                                ),
-                                keyboardType: TextInputType.number,
-                              ),
-                            ),
-                            16.horizontalSpace,
-                            Expanded(
-                              child: TextField(
-                                controller: durationController,
-                                decoration: InputDecoration(
-                                  labelText: 'Duration',
-                                  border: OutlineInputBorder(),
-                                  prefixIcon: Icon(Icons.access_time),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        16.verticalSpace,
-
-                        // Technician Name
-                        TextField(
-                          controller: technicianController,
-                          decoration: InputDecoration(
-                            labelText: 'Technician Name',
-                            border: OutlineInputBorder(),
-                            prefixIcon: Icon(Icons.person),
-                          ),
-                        ),
-                        16.verticalSpace,
-
-                        // Category Selection
-                        Obx(() => DropdownButtonFormField<String>(
-                              decoration: InputDecoration(
-                                labelText: 'Category',
-                                border: OutlineInputBorder(),
-                                prefixIcon: Icon(Icons.category),
-                              ),
-                              value: _selectedCategory.value.isEmpty
-                                  ? null
-                                  : _selectedCategory.value,
-                              items: [
-                                'installation',
-                                'maintenance',
-                                'inspection',
-                                'consultation',
-                                'emergency',
-                                'training'
-                              ].map((category) {
-                                return DropdownMenuItem(
-                                  value: category,
-                                  child: Text(category[0].toUpperCase() +
-                                      category.substring(1)),
-                                );
-                              }).toList(),
-                              onChanged: (value) {
-                                _selectedCategory.value = value ?? '';
-                              },
-                            )),
-                        16.verticalSpace,
-
-                        // Image Upload Section
-                        Container(
-                          padding: EdgeInsets.all(16.w),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey.shade300),
-                            borderRadius: BorderRadius.circular(12.r),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    'Service Images',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16.sp,
-                                    ),
-                                  ),
-                                  Obx(() => Text(
-                                        '${selectedImages.length} selected',
-                                        style: TextStyle(
-                                          color: Colors.grey.shade600,
-                                          fontSize: 12.sp,
-                                        ),
-                                      )),
-                                ],
-                              ),
-                              8.verticalSpace,
-
-                              // Image Preview Grid
-                              Obx(() {
-                                if (selectedImages.isEmpty) {
-                                  return Container(
-                                    height: 120.h,
-                                    decoration: BoxDecoration(
-                                      color: Colors.grey.shade100,
-                                      borderRadius: BorderRadius.circular(8.r),
-                                      border: Border.all(
-                                          color: Colors.grey.shade300,
-                                          style: BorderStyle.solid),
-                                    ),
-                                    child: Center(
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Icon(Icons.image_outlined,
-                                              size: 40.w,
-                                              color: Colors.grey.shade400),
-                                          8.verticalSpace,
-                                          Text(
-                                            'No images selected',
-                                            style: TextStyle(
-                                              color: Colors.grey.shade600,
-                                              fontSize: 12.sp,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  );
-                                }
-
-                                return Container(
-                                  height: 120.h,
-                                  child: ListView.builder(
-                                    scrollDirection: Axis.horizontal,
-                                    itemCount: selectedImages.length,
-                                    itemBuilder: (context, index) {
-                                      final file = selectedImages[index];
-                                      return Container(
-                                        width: 100.w,
-                                        margin: EdgeInsets.only(right: 8.w),
-                                        child: Stack(
-                                          children: [
-                                            Container(
-                                              width: 100.w,
-                                              height: 120.h,
-                                              decoration: BoxDecoration(
-                                                borderRadius:
-                                                    BorderRadius.circular(8.r),
-                                                border: Border.all(
-                                                    color:
-                                                        Colors.grey.shade300),
-                                              ),
-                                              child: ClipRRect(
-                                                borderRadius:
-                                                    BorderRadius.circular(8.r),
-                                                child: Image.file(
-                                                  file,
-                                                  fit: BoxFit.cover,
-                                                  errorBuilder: (context, error,
-                                                      stackTrace) {
-                                                    return Container(
-                                                      color:
-                                                          Colors.grey.shade200,
-                                                      child: Icon(
-                                                          Icons.broken_image,
-                                                          color: Colors
-                                                              .grey.shade400),
-                                                    );
-                                                  },
-                                                ),
-                                              ),
-                                            ),
-                                            Positioned(
-                                              top: 4,
-                                              right: 4,
-                                              child: GestureDetector(
-                                                onTap: () => selectedImages
-                                                    .removeAt(index),
-                                                child: Container(
-                                                  width: 24.w,
-                                                  height: 24.w,
-                                                  decoration: BoxDecoration(
-                                                    color: Colors.red,
-                                                    shape: BoxShape.circle,
-                                                  ),
-                                                  child: Icon(
-                                                    Icons.close,
-                                                    color: Colors.white,
-                                                    size: 16.w,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                );
-                              }),
-
-                              8.verticalSpace,
-
-                              // Upload Button
-                              Obx(() => isUploadingImages.value
-                                  ? Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        CircularProgressIndicator(
-                                            strokeWidth: 2),
-                                        8.horizontalSpace,
-                                        Text('Uploading...'),
-                                      ],
-                                    )
-                                  : ElevatedButton.icon(
-                                      onPressed: pickImages,
-                                      icon: Icon(Icons.cloud_upload_outlined),
-                                      label: Text('Choose Images'),
-                                      style: ElevatedButton.styleFrom(
-                                        minimumSize:
-                                            Size(double.infinity, 40.h),
-                                      ),
-                                    )),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+                // Service Name
+                TextField(
+                  controller: nameController,
+                  decoration: InputDecoration(
+                    labelText: 'Service Name',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.eco_rounded),
                   ),
                 ),
-
-                // Actions
                 16.verticalSpace,
+
+                // Description
+                TextField(
+                  controller: descriptionController,
+                  decoration: InputDecoration(
+                    labelText: 'Description',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.description),
+                  ),
+                  maxLines: 3,
+                ),
+                16.verticalSpace,
+
+                // Price and Duration Row
                 Row(
                   children: [
                     Expanded(
-                      child: OutlinedButton(
-                        onPressed: () {
-                          Get.back();
-                          clearServiceForm();
-                        },
-                        child: Text('Cancel'),
+                      child: TextField(
+                        controller: priceController,
+                        decoration: InputDecoration(
+                          labelText: 'Price',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.attach_money),
+                        ),
+                        keyboardType: TextInputType.number,
                       ),
                     ),
                     16.horizontalSpace,
                     Expanded(
-                      child: Obx(() => ElevatedButton(
-                            onPressed: isUploadingImages.value
-                                ? null
-                                : () {
-                                    addService();
-                                    Get.back();
-                                  },
-                            child: isUploadingImages.value
-                                ? Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      SizedBox(
-                                        width: 16.w,
-                                        height: 16.w,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                      8.horizontalSpace,
-                                      Text('Adding...'),
-                                    ],
-                                  )
-                                : Text('Add Service'),
-                            style: ElevatedButton.styleFrom(
-                              minimumSize: Size(double.infinity, 40.h),
-                            ),
-                          )),
+                      child: TextField(
+                        controller: durationController,
+                        decoration: InputDecoration(
+                          labelText: 'Duration',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.access_time),
+                        ),
+                      ),
                     ),
                   ],
+                ),
+                16.verticalSpace,
+
+                // Technician Name
+                TextField(
+                  controller: technicianController,
+                  decoration: InputDecoration(
+                    labelText: 'Technician Name',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.person),
+                  ),
+                ),
+                16.verticalSpace,
+
+                // Category Selection
+                Obx(() => DropdownButtonFormField<String>(
+                      decoration: InputDecoration(
+                        labelText: 'Category',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.category),
+                      ),
+                      value: _selectedCategory.value.isEmpty
+                          ? null
+                          : _selectedCategory.value,
+                      items: [
+                        'installation',
+                        'maintenance',
+                        'inspection',
+                        'consultation',
+                        'emergency',
+                        'training'
+                      ].map((category) {
+                        return DropdownMenuItem(
+                          value: category,
+                          child: Text(category[0].toUpperCase() +
+                              category.substring(1)),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        _selectedCategory.value = value ?? '';
+                      },
+                    )),
+                16.verticalSpace,
+
+                // Image Upload Section
+                Container(
+                  padding: EdgeInsets.all(16.w),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey.shade300),
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Service Images',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16.sp,
+                            ),
+                          ),
+                          Obx(() => Text(
+                                '${selectedImages.length} selected',
+                                style: TextStyle(
+                                  color: Colors.grey.shade600,
+                                  fontSize: 12.sp,
+                                ),
+                              )),
+                        ],
+                      ),
+                      8.verticalSpace,
+
+                      // Image Preview Grid
+                      Obx(() {
+                        if (selectedImages.isEmpty) {
+                          return Container(
+                            height: 120.h,
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade100,
+                              borderRadius: BorderRadius.circular(8.r),
+                              border: Border.all(
+                                  color: Colors.grey.shade300,
+                                  style: BorderStyle.solid),
+                            ),
+                            child: Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.image_outlined,
+                                      size: 40.w, color: Colors.grey.shade400),
+                                  8.verticalSpace,
+                                  Text(
+                                    'No images selected',
+                                    style: TextStyle(
+                                      color: Colors.grey.shade600,
+                                      fontSize: 12.sp,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }
+
+                        return Container(
+                          height: 120.h,
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: selectedImages.length,
+                            itemBuilder: (context, index) {
+                              final file = selectedImages[index];
+                              return Container(
+                                width: 100.w,
+                                margin: EdgeInsets.only(right: 8.w),
+                                child: Stack(
+                                  children: [
+                                    Container(
+                                      width: 100.w,
+                                      height: 120.h,
+                                      decoration: BoxDecoration(
+                                        borderRadius:
+                                            BorderRadius.circular(8.r),
+                                        border: Border.all(
+                                            color: Colors.grey.shade300),
+                                      ),
+                                      child: ClipRRect(
+                                        borderRadius:
+                                            BorderRadius.circular(8.r),
+                                        child: Image.file(
+                                          file,
+                                          fit: BoxFit.cover,
+                                          errorBuilder:
+                                              (context, error, stackTrace) {
+                                            return Container(
+                                              color: Colors.grey.shade200,
+                                              child: Icon(Icons.broken_image,
+                                                  color: Colors.grey.shade400),
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                    ),
+                                    Positioned(
+                                      top: 4,
+                                      right: 4,
+                                      child: GestureDetector(
+                                        onTap: () =>
+                                            selectedImages.removeAt(index),
+                                        child: Container(
+                                          width: 24.w,
+                                          height: 24.w,
+                                          decoration: BoxDecoration(
+                                            color: Colors.red,
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: Icon(
+                                            Icons.close,
+                                            color: Colors.white,
+                                            size: 16.w,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                        );
+                      }),
+
+                      8.verticalSpace,
+
+                      // Upload Button
+                      Obx(() => isUploadingImages.value
+                          ? Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                CircularProgressIndicator(strokeWidth: 2),
+                                8.horizontalSpace,
+                                Text('Uploading...'),
+                              ],
+                            )
+                          : ElevatedButton.icon(
+                              onPressed: () => pickImagesWithContext(context),
+                              icon: Icon(Icons.cloud_upload_outlined),
+                              label: Text('Choose Images'),
+                              style: ElevatedButton.styleFrom(
+                                minimumSize: Size(double.infinity, 40.h),
+                              ),
+                            )),
+                    ],
+                  ),
                 ),
               ],
             ),
           ),
         ),
-      ),
+
+        // Actions
+        16.verticalSpace,
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton(
+                onPressed: () {
+                  Get.back();
+                  clearServiceForm();
+                },
+                child: Text('Cancel'),
+              ),
+            ),
+            16.horizontalSpace,
+            Expanded(
+              child: Obx(() => ElevatedButton(
+                    onPressed: isUploadingImages.value
+                        ? null
+                        : () {
+                            addService();
+                            Get.back();
+                          },
+                    child: isUploadingImages.value
+                        ? Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: 16.w,
+                                height: 16.w,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              8.horizontalSpace,
+                              Text('Adding...'),
+                            ],
+                          )
+                        : Text('Add Service'),
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: Size(double.infinity, 40.h),
+                    ),
+                  )),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }

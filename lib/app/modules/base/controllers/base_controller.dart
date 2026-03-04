@@ -1,6 +1,5 @@
 import 'package:get/get.dart';
 
-import '../../../../utils/dummy_helper.dart';
 import '../../cart/controllers/cart_controller.dart';
 import '../../../data/services/auth_service.dart';
 import '../../../routes/app_pages.dart';
@@ -43,37 +42,34 @@ class BaseController extends GetxController {
     }
   }
 
-  /// calculate number of products in cart
+  /// calculate number of products in cart from cart controller
   getCartItemsCount() {
-    var products = DummyHelper.products;
-    cartItemsCount = products.fold<int>(0, (p, c) {
-      var product = c as Map<String, dynamic>;
-      return p + (product['quantity'] as int? ?? 0);
-    });
+    if (Get.isRegistered<CartController>()) {
+      cartItemsCount = Get.find<CartController>().totalItems;
+    } else {
+      cartItemsCount = 0;
+    }
     update(['CartBadge']);
   }
 
-  /// when user user press on add + icon
-  onIncreasePressed(int productId) {
-    var product = DummyHelper.products.firstWhere((p) => p['id'] == productId)
-        as Map<String, dynamic>;
-    product['quantity'] = (product['quantity'] as int? ?? 0) + 1;
-    getCartItemsCount();
+  /// when user press on add + icon - delegate to cart controller
+  onIncreasePressed(String serviceId) {
+    if (Get.isRegistered<CartController>()) {
+      Get.find<CartController>().onIncreasePressed(serviceId);
+      getCartItemsCount();
+    }
     update(['ProductQuantity']);
   }
 
-  /// when user press on remove - icon
-  onDecreasePressed(int productId) {
-    var product = DummyHelper.products.firstWhere((p) => p['id'] == productId)
-        as Map<String, dynamic>;
-    int currentQuantity = product['quantity'] as int? ?? 0;
-    if (currentQuantity > 0) {
-      product['quantity'] = currentQuantity - 1;
+  /// when user press on remove - icon - delegate to cart controller
+  onDecreasePressed(String serviceId) {
+    if (Get.isRegistered<CartController>()) {
+      Get.find<CartController>().onDecreasePressed(serviceId);
       getCartItemsCount();
       if (Get.isRegistered<CartController>()) {
         Get.find<CartController>().getCartProducts();
       }
-      update(['ProductQuantity']);
     }
+    update(['ProductQuantity']);
   }
 }

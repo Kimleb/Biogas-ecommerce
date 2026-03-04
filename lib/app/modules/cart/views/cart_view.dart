@@ -10,8 +10,6 @@ import '../../../components/custom_icon_button.dart';
 import '../../../components/no_data.dart';
 import '../controllers/cart_controller.dart';
 import 'widgets/service_cart_item.dart';
-import '../../../../utils/dummy_helper.dart';
-// import '../../../data/models/service_model.dart'; // Temporarily commented
 
 class CartView extends GetView<CartController> {
   const CartView({Key? key}) : super(key: key);
@@ -79,18 +77,16 @@ class CartView extends GetView<CartController> {
                       itemCount: controller.services.length,
                       itemBuilder: (context, index) {
                         final service = controller.services[index];
-                        final productData = DummyHelper.products.firstWhere(
-                          (p) => p['id'] == service.id,
-                          orElse: () => {'quantity': 0},
-                        );
+                        final quantity =
+                            controller.serviceQuantities[service.id] ?? 0;
 
                         return ServiceCartItem(
                           service: service,
-                          quantity: productData['quantity'] as int? ?? 0,
+                          quantity: quantity,
                           onIncrease: () =>
-                              controller.onIncreasePressed(service.id as int),
+                              controller.onIncreasePressed(service.id),
                           onDecrease: () =>
-                              controller.onDecreasePressed(service.id as int),
+                              controller.onDecreasePressed(service.id),
                         ).animate(delay: (100 * index).ms).fade().slideX(
                               duration: 300.ms,
                               begin: -1,
