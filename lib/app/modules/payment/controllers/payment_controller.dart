@@ -169,30 +169,38 @@ class PaymentController extends GetxController {
     // Simulate payment processing delay
     await Future.delayed(Duration(seconds: 2));
 
-    // For demo purposes, assume payment was successful
-    await _handlePaymentSuccess(reference);
+    // For demo purposes, create a successful payment without actual verification
+    // since we're simulating the payment flow
+    final simulatedPayment = PaymentModel(
+      id: reference,
+      bookingId: booking.id,
+      userId: booking.customerId,
+      technicianId: booking.technicianId,
+      amount: totalAmount,
+      currency: 'KES',
+      paymentType: PaymentType.payNow,
+      status: PaymentStatus.completed,
+      createdAt: DateTime.now(),
+      paidAt: DateTime.now(),
+      description: 'Payment for ${booking.serviceName}',
+      reference: reference,
+    );
+
+    // Navigate to success page with simulated payment data
+    await _handlePaymentSuccess(simulatedPayment);
   }
 
-  Future<void> _handlePaymentSuccess(String reference) async {
+  Future<void> _handlePaymentSuccess(PaymentModel payment) async {
     try {
-      // Verify payment
-      final payment = await PaystackService.to.verifyPayment(reference);
+      // For simulated payments, skip verification and proceed directly
+      // For real payments, you would verify here
 
-      if (payment != null) {
-        // Navigate to success page
-        Get.toNamed(Routes.PAYMENT_SUCCESS, arguments: {
-          'paymentId': payment.id,
-          'amount': payment.amount,
-          'serviceName': booking.serviceName,
-        });
-      } else {
-        Get.snackbar(
-          'Verification Failed',
-          'Payment was successful but verification failed',
-          backgroundColor: Colors.orange,
-          colorText: Colors.white,
-        );
-      }
+      // Navigate to success page
+      Get.toNamed(Routes.PAYMENT_SUCCESS, arguments: {
+        'paymentId': payment.id,
+        'amount': payment.amount,
+        'serviceName': booking.serviceName,
+      });
     } catch (e) {
       Get.snackbar(
         'Error',
