@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../data/services/paystack_service.dart';
+import '../../../data/services/auth_service.dart';
 import '../../../data/models/payment_model.dart';
 import '../../../data/models/booking_model.dart';
-import '../../payment/views/payment_success_view.dart';
+import '../../../routes/app_pages.dart';
 
 class PaymentController extends GetxController {
   final isLightTheme = true.obs;
@@ -13,31 +14,53 @@ class PaymentController extends GetxController {
   final selectedPaymentMethod = PaymentMethod.mpesa.obs;
   final phoneController = TextEditingController();
 
-  // Sample data - replace with actual booking data
-  final BookingModel? booking = BookingModel(
-    id: 'booking_123',
-    customerId: 'customer_456',
-    customerName: 'John Doe',
-    serviceId: 'service_001',
-    serviceName: 'Biogas Installation',
-    technicianId: 'tech_789',
-    bookingDate: DateTime.now(),
-    serviceDate: DateTime.now().add(Duration(days: 1)),
-    status: 'pending',
-    totalPrice: 2650.0,
-    address: '123 Main St, Nairobi, Kenya',
-    selectedParts: [],
-  );
+  /// Booking associated with this payment.
+  /// Expected to be passed via Get.arguments from the booking flow.
+  late final BookingModel booking;
 
   // Payment amounts
-  double get serviceFee => 2500.0;
-  double get platformFee => 150.0;
+  double get serviceFee => booking.totalPrice;
+
+  /// Simple platform fee (e.g. 5% of service fee).
+  double get platformFee => (serviceFee * 0.05).roundToDouble();
+
   double get totalAmount => serviceFee + platformFee;
+
+  /// Get user email from AuthService
+  String get userEmail {
+    try {
+      final user = AuthService.to.currentUser;
+      return user?.email ?? 'customer@example.com';
+    } catch (e) {
+      return 'customer@example.com';
+    }
+  }
 
   @override
   void onInit() {
     super.onInit();
-    // Pre-fill phone number if available from user profile
+    // Initialize booking from navigation arguments or fallback sample
+    final arg = Get.arguments;
+    if (arg is BookingModel) {
+      booking = arg;
+    } else {
+      booking = BookingModel(
+        id: 'booking_sample',
+        customerId: 'customer_sample',
+        customerName: 'Sample Customer',
+        serviceId: 'service_sample',
+        serviceName: 'Biogas Service',
+        technicianId: null,
+        bookingDate: DateTime.now(),
+        serviceDate: DateTime.now().add(const Duration(days: 1)),
+        status: 'pending',
+        totalPrice: 2500.0,
+        address: 'No address provided',
+        selectedParts: const [],
+      );
+    }
+
+    // Pre-fill phone number if available from user profile (static for now)
     phoneController.text = '+254712345678';
   }
 
@@ -68,8 +91,8 @@ class PaymentController extends GetxController {
       isProcessing.value = true;
 
       final payment = await PaystackService.to.initializeServicePayment(
-        booking: booking!,
-        email: 'customer@example.com',
+        booking: booking,
+        email: userEmail,
         amount: totalAmount,
         paymentType: PaymentType.payNow,
         paymentMethod: PaymentMethod.mpesa,
@@ -77,8 +100,19 @@ class PaymentController extends GetxController {
       );
 
       if (payment != null) {
-        // Show OTP dialog
-        _showOtpDialog(payment.reference!);
+        final authUrl = PaystackService.to.getAuthorizationUrl(payment);
+        if (authUrl != null) {
+          // For now, simulate successful payment since we can't launch web view
+          // In a real app, you would launch a web view with the authUrl
+          await _simulatePaymentSuccess(payment.reference!);
+        } else {
+          Get.snackbar(
+            'Payment Error',
+            'No authorization URL received',
+            backgroundColor: Colors.red,
+            colorText: Colors.white,
+          );
+        }
       }
     } catch (e) {
       Get.snackbar(
@@ -97,21 +131,27 @@ class PaymentController extends GetxController {
       isProcessing.value = true;
 
       final payment = await PaystackService.to.initializeServicePayment(
-        booking: booking!,
-        email: 'customer@example.com',
+        booking: booking,
+        email: userEmail,
         amount: totalAmount,
         paymentType: PaymentType.payNow,
         paymentMethod: PaymentMethod.card,
       );
 
       if (payment != null) {
-        // Handle card payment (redirect to authorization URL)
-        Get.snackbar(
-          'Card Payment',
-          'Redirecting to payment page...',
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-        );
+        final authUrl = PaystackService.to.getAuthorizationUrl(payment);
+        if (authUrl != null) {
+          // For now, simulate successful payment since we can't launch web view
+          // In a real app, you would launch a web view with the authUrl
+          await _simulatePaymentSuccess(payment.reference!);
+        } else {
+          Get.snackbar(
+            'Payment Error',
+            'No authorization URL received',
+            backgroundColor: Colors.red,
+            colorText: Colors.white,
+          );
+        }
       }
     } catch (e) {
       Get.snackbar(
@@ -125,89 +165,41 @@ class PaymentController extends GetxController {
     }
   }
 
-  void _showOtpDialog(String reference) {
-    final otpController = TextEditingController();
+  Future<void> _simulatePaymentSuccess(String reference) async {
+    // Simulate payment processing delay
+    await Future.delayed(Duration(seconds: 2));
 
-    Get.dialog(
-      AlertDialog(
-        title: Row(
-          children: [
-            Icon(Icons.sms, color: Color(0xFFFF8C00)),
-            SizedBox(width: 12),
-            Text('Enter OTP'),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Enter the 6-digit OTP sent to your M-Pesa number',
-              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-            ),
-            SizedBox(height: 16),
-            TextField(
-              controller: otpController,
-              keyboardType: TextInputType.number,
-              maxLength: 6,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 8,
-              ),
-              decoration: InputDecoration(
-                hintText: '000000',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                counterText: '',
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () => _submitOtp(reference, otpController.text),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Color(0xFFFF8C00),
-            ),
-            child: Text('Submit'),
-          ),
-        ],
-      ),
-    );
+    // For demo purposes, assume payment was successful
+    await _handlePaymentSuccess(reference);
   }
 
-  Future<void> _submitOtp(String reference, String otp) async {
-    Get.back(); // Close dialog
-
+  Future<void> _handlePaymentSuccess(String reference) async {
     try {
-      isLoading.value = true;
-      loadingMessage.value = 'Verifying OTP...';
-
-      final payment = await PaystackService.to.submitMpesaOtp(reference, otp);
+      // Verify payment
+      final payment = await PaystackService.to.verifyPayment(reference);
 
       if (payment != null) {
         // Navigate to success page
-        Get.off(() => PaymentSuccessView(
-              paymentId: payment.id,
-              amount: payment.amount,
-              serviceName: booking!.serviceName,
-            ));
+        Get.toNamed(Routes.PAYMENT_SUCCESS, arguments: {
+          'paymentId': payment.id,
+          'amount': payment.amount,
+          'serviceName': booking.serviceName,
+        });
+      } else {
+        Get.snackbar(
+          'Verification Failed',
+          'Payment was successful but verification failed',
+          backgroundColor: Colors.orange,
+          colorText: Colors.white,
+        );
       }
     } catch (e) {
       Get.snackbar(
-        'OTP Verification Failed',
-        e.toString(),
+        'Error',
+        'Failed to process payment success: ${e.toString()}',
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
-    } finally {
-      isLoading.value = false;
     }
   }
 

@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import '../../../../utils/constants.dart';
 import '../../../components/dark_transition.dart';
+import '../../../routes/app_pages.dart';
 
 // Extension for spacing
 extension HorizontalSpace on double {
@@ -18,12 +19,27 @@ class PaymentSuccessView extends StatelessWidget {
   final double amount;
   final String serviceName;
 
-  const PaymentSuccessView({
+  PaymentSuccessView({
     Key? key,
-    required this.paymentId,
-    required this.amount,
-    required this.serviceName,
-  }) : super(key: key);
+  })  : paymentId = _getPaymentId(),
+        amount = _getAmount(),
+        serviceName = _getServiceName(),
+        super(key: key);
+
+  static String _getPaymentId() {
+    final args = Get.arguments as Map<String, dynamic>?;
+    return args?['paymentId'] ?? 'Unknown';
+  }
+
+  static double _getAmount() {
+    final args = Get.arguments as Map<String, dynamic>?;
+    return args?['amount']?.toDouble() ?? 0.0;
+  }
+
+  static String _getServiceName() {
+    final args = Get.arguments as Map<String, dynamic>?;
+    return args?['serviceName'] ?? 'Unknown Service';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -94,7 +110,7 @@ class PaymentSuccessView extends StatelessWidget {
                   ),
                 ),
               ),
-              
+
               // Payment Details
               Expanded(
                 flex: 4,
@@ -149,7 +165,7 @@ class PaymentSuccessView extends StatelessWidget {
                         ),
                       ),
                       24.verticalSpace,
-                      
+
                       // Amount Details
                       Text(
                         'Payment Details',
@@ -168,7 +184,8 @@ class PaymentSuccessView extends StatelessWidget {
                         ),
                         child: Column(
                           children: [
-                            _buildDetailRow('Amount Paid', 'KES ${amount.toStringAsFixed(2)}'),
+                            _buildDetailRow('Amount Paid',
+                                'KES ${amount.toStringAsFixed(2)}'),
                             12.verticalSpace,
                             _buildDetailRow('Payment Method', 'M-Pesa'),
                             12.verticalSpace,
@@ -184,14 +201,14 @@ class PaymentSuccessView extends StatelessWidget {
                         ),
                       ),
                       24.verticalSpace,
-                      
+
                       // Action Buttons
                       Spacer(),
                       Row(
                         children: [
                           Expanded(
                             child: OutlinedButton(
-                              onPressed: () => Get.back(),
+                              onPressed: () => Get.offAllNamed(Routes.HOME),
                               style: OutlinedButton.styleFrom(
                                 side: BorderSide(color: Color(0xFF4CAF50)),
                                 shape: RoundedRectangleBorder(

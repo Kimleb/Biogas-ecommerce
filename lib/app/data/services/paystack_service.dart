@@ -2,8 +2,10 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import 'package:firebase_database/firebase_database.dart';
 import '../models/payment_model.dart';
 import '../models/booking_model.dart';
+import '../../../config/paystack_config.dart';
 
 /// Paystack Payment Service
 /// Handles all payment operations with Paystack API
@@ -11,14 +13,31 @@ class PaystackService extends GetxService {
   static PaystackService get to => Get.find();
 
   // Paystack configuration
-  static const String _baseUrl = 'https://api.paystack.co';
+  static const String _publicKey =
+      'pk_test_your_public_key_here'; // Replace with your public key
   static const String _secretKey =
-      'YOUR_PAYSTACK_SECRET_KEY'; // Move to env vars
+      'sk_test_your_secret_key_here'; // Replace with your secret key
+
+  // Firebase Realtime Database references
+  final FirebaseDatabase _database = FirebaseDatabase.instance;
+
+  DatabaseReference get _paymentsRef => _database.ref().child('payments');
+
+  DatabaseReference get _bookingsRef => _database.ref().child('bookings');
 
   // Reactive state
   final RxBool isProcessingPayment = false.obs;
   final RxString paymentStatus = ''.obs;
   final Rx<PaymentModel?> currentPayment = Rx<PaymentModel?>(null);
+
+  // Paystack configuration
+  bool _isInitialized = false;
+
+  @override
+  void onInit() {
+    super.onInit();
+    _isInitialized = true; // Simple initialization for REST API approach
+  }
 
   /// Initialize payment for service booking
   Future<PaymentModel?> initializeServicePayment({
@@ -40,7 +59,7 @@ class PaystackService extends GetxService {
         userId: booking.customerId, // Assuming booking has customerId
         technicianId: booking.technicianId,
         amount: amount,
-        currency: 'KES',
+        currency: PaystackConfig.currency,
         paymentType: paymentType,
         status: PaymentStatus.pending,
         createdAt: DateTime.now(),
@@ -102,35 +121,43 @@ class PaystackService extends GetxService {
     }
   }
 
-  /// Initialize Paystack transaction
+  /// Initialize Paystack transaction using REST API
   Future<Map<String, dynamic>> _initializeTransaction({
     required String email,
     required int amount,
     required String reference,
     Map<String, dynamic>? metadata,
   }) async {
-    final url = Uri.parse('$_baseUrl/transaction/initialize');
+    try {
+      final url = Uri.parse('https://api.paystack.co/transaction/initialize');
 
-    final response = await http.post(
-      url,
-      headers: {
-        'Authorization': 'Bearer $_secretKey',
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({
-        'email': email,
-        'amount': amount,
-        'reference': reference,
-        'callback_url':
-            'https://yourapp.com/payment/callback', // Your callback URL
-        'metadata': metadata ?? {},
-      }),
-    );
+      final response = await http.post(
+        url,
+        headers: {
+          'Authorization': 'Bearer $_secretKey',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({
+          'email': email,
+          'amount': amount,
+          'reference': reference,
+          'currency': PaystackConfig.currency,
+          'metadata': metadata,
+        }),
+      );
 
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
-    } else {
-      throw PaymentException('Paystack API error: ${response.body}');
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return data;
+      } else {
+        return {
+          'status': false,
+          'message':
+              'Transaction initialization failed: ${response.statusCode}',
+        };
+      }
+    } catch (e) {
+      return {'status': false, 'message': 'API error: ${e.toString()}'};
     }
   }
 
@@ -146,32 +173,48 @@ class PaystackService extends GetxService {
       throw PaymentException('Phone number is required for M-Pesa payments');
     }
 
-    final url = Uri.parse('$_baseUrl/charge');
+    try {
+      final url = Uri.parse('https://api.paystack.co/transaction/initialize');
 
-    final response = await http.post(
-      url,
-      headers: {
-        'Authorization': 'Bearer $_secretKey',
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({
-        'email': email,
-        'amount': (amount * 100).round(), // Paystack uses amount in cents
-        'reference': reference,
-        'currency': 'KES',
-        'channel': 'mobile_money',
-        'phone': phoneNumber,
-        'provider': 'mpesa',
-        'metadata': metadata ?? {},
-      }),
-    );
+      // Add phone number to metadata for M-Pesa
+      final updatedMetadata = <String, dynamic>{
+        'phone_number': phoneNumber,
+        'payment_channel': 'mpesa',
+        ...?metadata,
+      };
 
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
-    } else {
-      throw PaymentException(
-          'M-Pesa payment initialization error: ${response.body}');
+      final response = await http.post(
+        url,
+        headers: {
+          'Authorization': 'Bearer $_secretKey',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({
+          'email': email,
+          'amount': (amount * 100).round(),
+          'reference': reference,
+          'currency': PaystackConfig.currency,
+          'metadata': updatedMetadata,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return data;
+      } else {
+        return {
+          'status': false,
+          'message': 'M-Pesa initialization failed: ${response.statusCode}',
+        };
+      }
+    } catch (e) {
+      return {'status': false, 'message': 'M-Pesa API error: ${e.toString()}'};
     }
+  }
+
+  /// Get payment authorization URL for web checkout
+  String? getAuthorizationUrl(PaymentModel payment) {
+    return payment.authorizationUrl;
   }
 
   /// Verify payment transaction
@@ -179,7 +222,8 @@ class PaystackService extends GetxService {
     try {
       paymentStatus.value = 'Verifying payment...';
 
-      final response = await _verifyTransaction(reference);
+      // Verify using Paystack REST API
+      final response = await _verifyTransactionApi(reference);
 
       if (response['status'] == true &&
           response['data']['status'] == 'success') {
@@ -217,7 +261,8 @@ class PaystackService extends GetxService {
     try {
       paymentStatus.value = 'Submitting OTP...';
 
-      final response = await _submitMpesaOtp(reference: reference, otp: otp);
+      // Submit OTP using Paystack REST API
+      final response = await _submitOtpApi(reference, otp);
 
       if (response['status'] == true &&
           response['data']['status'] == 'success') {
@@ -250,47 +295,104 @@ class PaystackService extends GetxService {
     }
   }
 
-  /// Verify transaction with Paystack
-  Future<Map<String, dynamic>> _verifyTransaction(String reference) async {
-    final url = Uri.parse('$_baseUrl/transaction/verify/$reference');
+  /// Verify transaction using Paystack REST API
+  Future<Map<String, dynamic>> _verifyTransactionApi(String reference) async {
+    try {
+      final url =
+          Uri.parse('https://api.paystack.co/transaction/verify/$reference');
 
-    final response = await http.get(
-      url,
-      headers: {
-        'Authorization': 'Bearer $_secretKey',
-      },
-    );
+      final response = await http.get(
+        url,
+        headers: {
+          'Authorization': 'Bearer $_secretKey',
+          'Content-Type': 'application/json',
+        },
+      );
 
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
-    } else {
-      throw PaymentException('Paystack verification error: ${response.body}');
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return data;
+      } else {
+        return {
+          'status': false,
+          'message': 'Verification failed: ${response.statusCode}',
+        };
+      }
+    } catch (e) {
+      return {
+        'status': false,
+        'message': 'API error: ${e.toString()}',
+      };
     }
   }
 
-  /// Submit M-Pesa OTP for payment completion
-  Future<Map<String, dynamic>> _submitMpesaOtp({
-    required String reference,
-    required String otp,
-  }) async {
-    final url = Uri.parse('$_baseUrl/charge/submit_otp');
+  /// Submit OTP using Paystack REST API
+  Future<Map<String, dynamic>> _submitOtpApi(
+      String reference, String otp) async {
+    try {
+      final url = Uri.parse('https://api.paystack.co/charge/submit_otp');
 
-    final response = await http.post(
-      url,
-      headers: {
-        'Authorization': 'Bearer $_secretKey',
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({
-        'reference': reference,
-        'otp': otp,
-      }),
-    );
+      final response = await http.post(
+        url,
+        headers: {
+          'Authorization': 'Bearer $_secretKey',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({
+          'reference': reference,
+          'otp': otp,
+        }),
+      );
 
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
-    } else {
-      throw PaymentException('M-Pesa OTP submission error: ${response.body}');
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return data;
+      } else {
+        return {
+          'status': false,
+          'message': 'OTP submission failed: ${response.statusCode}',
+        };
+      }
+    } catch (e) {
+      return {
+        'status': false,
+        'message': 'API error: ${e.toString()}',
+      };
+    }
+  }
+
+  /// Process refund using Paystack REST API
+  Future<Map<String, dynamic>> _processRefundApi(
+      String transactionId, String reason) async {
+    try {
+      final url = Uri.parse('https://api.paystack.co/refund');
+
+      final response = await http.post(
+        url,
+        headers: {
+          'Authorization': 'Bearer $_secretKey',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({
+          'transaction': transactionId,
+          'reason': reason,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return data;
+      } else {
+        return {
+          'status': false,
+          'message': 'Refund failed: ${response.statusCode}',
+        };
+      }
+    } catch (e) {
+      return {
+        'status': false,
+        'message': 'API error: ${e.toString()}',
+      };
     }
   }
 
@@ -299,11 +401,15 @@ class PaystackService extends GetxService {
     try {
       paymentStatus.value = 'Processing refund...';
 
-      // Implement refund logic
-      // This would typically involve calling Paystack's refund API
+      final response = await _processRefundApi(paymentId, reason);
 
-      paymentStatus.value = 'Refund processed successfully';
-      return true;
+      if (response['status'] == true) {
+        paymentStatus.value = 'Refund processed successfully';
+        return true;
+      } else {
+        paymentStatus.value = 'Refund failed';
+        return false;
+      }
     } catch (e) {
       paymentStatus.value = 'Refund failed';
       throw PaymentException('Refund failed: ${e.toString()}');
@@ -314,7 +420,16 @@ class PaystackService extends GetxService {
   Future<List<PaymentModel>> getPaymentHistory(String userId) async {
     try {
       // Fetch from database
-      // This would query your Firebase database for user's payments
+      final snapshot = await _paymentsRef.orderByChild('createdAt').get();
+
+      if (snapshot.value != null) {
+        final data = snapshot.value as Map<dynamic, dynamic>;
+        return data.entries
+            .where((entry) => entry.value['userId'] == userId)
+            .map((entry) =>
+                PaymentModel.fromJson(Map<String, dynamic>.from(entry.value)))
+            .toList();
+      }
       return [];
     } catch (e) {
       throw PaymentException(
@@ -327,7 +442,25 @@ class PaystackService extends GetxService {
       {DateTime? startDate, DateTime? endDate}) async {
     try {
       // Calculate earnings from completed payments
-      // This would query database and apply commission logic
+      final databaseEvent = await _paymentsRef.orderByChild('createdAt').once();
+      final snapshot = databaseEvent.snapshot;
+
+      if (snapshot.value != null) {
+        final data = snapshot.value as Map<dynamic, dynamic>;
+        double totalEarnings = 0.0;
+
+        for (final entry in data.entries) {
+          final payment =
+              PaymentModel.fromJson(Map<String, dynamic>.from(entry.value));
+          if (payment.technicianId == technicianId &&
+              payment.status == PaymentStatus.completed) {
+            // Apply commission logic (e.g., 80% to technician, 20% platform)
+            totalEarnings += payment.amount * 0.8;
+          }
+        }
+
+        return totalEarnings;
+      }
       return 0.0;
     } catch (e) {
       throw PaymentException('Failed to calculate earnings: ${e.toString()}');
@@ -341,16 +474,33 @@ class PaystackService extends GetxService {
   }
 
   Future<void> _savePaymentToDatabase(PaymentModel payment) async {
-    // Save to Firebase Realtime Database
-    // Implementation depends on your database structure
+    try {
+      await _paymentsRef.child(payment.id).set(payment.toJson());
+    } catch (e) {
+      throw PaymentException(
+          'Failed to save payment to database: ${e.toString()}');
+    }
   }
 
   Future<void> _updatePaymentInDatabase(PaymentModel payment) async {
-    // Update payment record in Firebase
+    try {
+      await _paymentsRef.child(payment.id).update(payment.toJson());
+    } catch (e) {
+      throw PaymentException(
+          'Failed to update payment in database: ${e.toString()}');
+    }
   }
 
   Future<void> _updateBookingStatus(String bookingId) async {
-    // Update booking status to 'paid' or 'confirmed'
+    try {
+      await _bookingsRef.child(bookingId).update({
+        'status': 'paid',
+        'updatedAt': DateTime.now().millisecondsSinceEpoch,
+      });
+    } catch (e) {
+      throw PaymentException(
+          'Failed to update booking status: ${e.toString()}');
+    }
   }
 }
 

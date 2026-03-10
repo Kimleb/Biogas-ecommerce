@@ -7,6 +7,8 @@ import 'app/data/local/my_shared_pref.dart';
 import 'app/data/services/auth_service.dart';
 import 'app/data/services/cloudinary_service.dart';
 import 'app/data/services/database_service.dart';
+import 'app/data/services/firebase_manager.dart';
+import 'app/data/services/paystack_service.dart';
 import 'app/routes/app_pages.dart';
 import 'config/cloudinary_config.dart';
 import 'config/theme/my_theme.dart';
@@ -25,6 +27,12 @@ Future<void> main() async {
   // init shared preference
   await MySharedPref.init();
 
+  // Initialize Firebase manager first (required by AuthService)
+  Get.put(FirebaseManager());
+
+  // Initialize Paystack service
+  Get.put(PaystackService());
+
   // Initialize services
   await Get.putAsync(() async => AuthService());
   await Get.putAsync(() async => CloudinaryService());
@@ -32,6 +40,7 @@ Future<void> main() async {
     cloudName: CloudinaryConfig.cloudName,
     uploadPreset: CloudinaryConfig.uploadPreset,
   );
+
   Get.put(DatabaseService());
 
   runApp(

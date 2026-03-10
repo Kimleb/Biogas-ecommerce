@@ -3,12 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import '../../../data/services/auth_service.dart';
 import '../../../data/services/cloudinary_service.dart';
+import '../../../data/services/firebase_manager.dart';
 import '../../../data/models/user_model.dart';
 
 class ProfileController extends GetxController {
   final AuthService _authService = AuthService.to;
   final CloudinaryService _cloudinaryService = CloudinaryService.to;
-  final FirebaseDatabase _database = FirebaseDatabase.instance;
+  final FirebaseDatabase _database = FirebaseManager.to.database;
 
   final Rx<UserModel?> currentUser = Rx<UserModel?>(null);
   final RxBool isLoading = false.obs;

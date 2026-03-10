@@ -32,25 +32,49 @@ class PartModel {
   });
 
   factory PartModel.fromJson(Map<String, dynamic> json) {
+    // Helper function to parse date from either timestamp or string
+    DateTime? parseDate(dynamic value) {
+      if (value == null) return null;
+      if (value is DateTime) return value;
+      if (value is num) {
+        return DateTime.fromMillisecondsSinceEpoch(value.toInt());
+      }
+      if (value is String) {
+        try {
+          // Try parsing as ISO string first
+          return DateTime.parse(value);
+        } catch (e) {
+          try {
+            // Try parsing as timestamp string
+            final timestamp = int.parse(value);
+            return DateTime.fromMillisecondsSinceEpoch(timestamp);
+          } catch (e2) {
+            return null;
+          }
+        }
+      }
+      return null;
+    }
+
     return PartModel(
-      id: json['id'] ?? '',
-      name: json['name'] ?? '',
-      description: json['description'] ?? '',
-      images: List<String>.from(json['images'] ?? []),
-      thumbnailImages: List<String>.from(json['thumbnailImages'] ?? []),
+      id: json['id']?.toString() ?? '',
+      name: json['name']?.toString() ?? '',
+      description: json['description']?.toString() ?? '',
+      images:
+          (json['images'] as List?)?.map((e) => e.toString()).toList() ?? [],
+      thumbnailImages: (json['thumbnailImages'] as List?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          [],
       price: (json['price'] as num?)?.toDouble() ?? 0.0,
-      quantity: json['quantity'] ?? 0,
-      categoryId: json['categoryId'],
-      category: json['category'],
-      brand: json['brand'],
-      model: json['model'],
-      isActive: json['isActive'] ?? true,
-      createdAt: json['createdAt'] != null 
-          ? DateTime.parse(json['createdAt']) 
-          : null,
-      updatedAt: json['updatedAt'] != null 
-          ? DateTime.parse(json['updatedAt']) 
-          : null,
+      quantity: (json['quantity'] as num?)?.toInt() ?? 0,
+      categoryId: json['categoryId']?.toString(),
+      category: json['category']?.toString(),
+      brand: json['brand']?.toString(),
+      model: json['model']?.toString(),
+      isActive: json['isActive'] as bool? ?? true,
+      createdAt: parseDate(json['createdAt']),
+      updatedAt: parseDate(json['updatedAt']),
     );
   }
 
@@ -111,5 +135,6 @@ class PartModel {
   String? get primaryImage => images.isNotEmpty ? images.first : null;
 
   // Get the primary thumbnail
-  String? get primaryThumbnail => thumbnailImages.isNotEmpty ? thumbnailImages.first : null;
+  String? get primaryThumbnail =>
+      thumbnailImages.isNotEmpty ? thumbnailImages.first : null;
 }

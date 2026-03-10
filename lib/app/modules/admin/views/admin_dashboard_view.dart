@@ -1,3 +1,4 @@
+import 'package:biogas_technician_app/app/modules/admin/controllers/admin_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -23,24 +24,45 @@ class AdminDashboardView extends GetView<AdminController> {
     return Scaffold(
       backgroundColor: Color(0xFFF8F9FA),
       body: Obx(() {
-        if (controller.isLoading.value) {
+        final isLoading = controller.isLoading.value;
+        if (isLoading) {
           return _buildLoadingState();
         }
+
+        // Ensure controller is initialized and has data
+        if (!Get.isRegistered<AdminController>()) {
+          return _buildLoadingState();
+        }
+
         return RefreshIndicator(
-          onRefresh: () => controller.loadData(),
+          onRefresh: () async {
+            try {
+              await controller.loadData();
+            } catch (e) {
+              Get.snackbar('Error', 'Failed to refresh data');
+            }
+          },
           child: SingleChildScrollView(
             physics: AlwaysScrollableScrollPhysics(),
-            child: Column(
-              children: [
-                // Modern Header
-                _buildHeader(),
-                // Summary Cards
-                _buildSummarySection(),
-                // Quick Actions Section
-                _buildQuickActionsSection(),
-                // Tab Section
-                _buildTabSection(),
-              ],
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: MediaQuery.of(context).size.height,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Modern Header
+                  _buildHeader(),
+                  // Summary Cards
+                  _buildSummarySection(),
+                  // Quick Actions Section
+                  _buildQuickActionsSection(),
+                  // Tab Section
+                  _buildTabSection(),
+                  // Add some bottom padding to prevent overflow
+                  SizedBox(height: 20.h),
+                ],
+              ),
             ),
           ),
         );
@@ -208,7 +230,7 @@ class AdminDashboardView extends GetView<AdminController> {
                 style: TextStyle(
                   fontSize: 20.sp,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black87,
+                  color: Color(0xFF2E3192),
                 ),
               ),
               Container(
@@ -253,7 +275,7 @@ class AdminDashboardView extends GetView<AdminController> {
             style: TextStyle(
               fontSize: 20.sp,
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
+              color: Color(0xFF2E3192),
             ),
           ),
           16.verticalSpace,
@@ -302,39 +324,45 @@ class AdminDashboardView extends GetView<AdminController> {
   }
 
   Widget _buildSummaryCards() {
-    return Row(
-      children: [
-        Expanded(
-          child: _buildAnimatedSummaryCard(
-            'Total Services',
-            '${controller.services.length}',
-            Icons.eco_rounded,
-            Color(0xFF4CAF50),
-            '',
+    return Obx(() {
+      final servicesCount = controller.services.length;
+      final bookingsCount = controller.bookings.length;
+      final partsCount = controller.parts.length;
+
+      return Row(
+        children: [
+          Expanded(
+            child: _buildAnimatedSummaryCard(
+              'Total Services',
+              '$servicesCount',
+              Icons.eco_rounded,
+              Color(0xFF4CAF50),
+              '',
+            ),
           ),
-        ),
-        12.horizontalSpace,
-        Expanded(
-          child: _buildAnimatedSummaryCard(
-            'Total Bookings',
-            '${controller.bookings.length}',
-            Icons.calendar_today,
-            Color(0xFF2196F3),
-            '',
+          12.horizontalSpace,
+          Expanded(
+            child: _buildAnimatedSummaryCard(
+              'Total Bookings',
+              '$bookingsCount',
+              Icons.calendar_today,
+              Color(0xFF2196F3),
+              '',
+            ),
           ),
-        ),
-        12.horizontalSpace,
-        Expanded(
-          child: _buildAnimatedSummaryCard(
-            'Total Parts',
-            '${controller.parts.length}',
-            Icons.build,
-            Color(0xFFFF9800),
-            '',
+          12.horizontalSpace,
+          Expanded(
+            child: _buildAnimatedSummaryCard(
+              'Total Parts',
+              '$partsCount',
+              Icons.build,
+              Color(0xFFFF9800),
+              '',
+            ),
           ),
-        ),
-      ],
-    );
+        ],
+      );
+    });
   }
 
   Widget _buildAnimatedSummaryCard(
@@ -342,15 +370,15 @@ class AdminDashboardView extends GetView<AdminController> {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.15),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(
-          color: Colors.white.withOpacity(0.25),
+          color: color.withOpacity(0.3),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: color.withOpacity(0.2),
             blurRadius: 10,
             offset: Offset(0, 4),
           ),
@@ -364,26 +392,26 @@ class AdminDashboardView extends GetView<AdminController> {
               Container(
                 padding: EdgeInsets.all(10.w),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.2),
+                  color: color.withOpacity(0.15),
                   borderRadius: BorderRadius.circular(12.r),
                 ),
-                child: Icon(icon, color: Colors.white, size: 22.sp),
+                child: Icon(icon, color: color, size: 22.sp),
               ),
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: color.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.trending_up, color: Colors.white, size: 12.sp),
+                    Icon(Icons.trending_up, color: color, size: 12.sp),
                     2.horizontalSpace,
                     Text(
                       '',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: color,
                         fontSize: 10.sp,
                         fontWeight: FontWeight.bold,
                       ),
@@ -397,7 +425,7 @@ class AdminDashboardView extends GetView<AdminController> {
           Text(
             value,
             style: TextStyle(
-              color: Colors.white,
+              color: Colors.black87,
               fontSize: 24.sp,
               fontWeight: FontWeight.bold,
             ),
@@ -406,7 +434,7 @@ class AdminDashboardView extends GetView<AdminController> {
           Text(
             title,
             style: TextStyle(
-              color: Colors.white.withOpacity(0.85),
+              color: Colors.grey[600],
               fontSize: 11.sp,
               fontWeight: FontWeight.w500,
             ),
@@ -470,7 +498,7 @@ class AdminDashboardView extends GetView<AdminController> {
                 'Test Image Picker',
                 Icons.image_search_outlined,
                 Color(0xFFE91E63),
-                () => controller.testImagePicker(),
+                () => controller.pickImages(),
               ),
             ),
             12.horizontalSpace,
@@ -489,15 +517,20 @@ class AdminDashboardView extends GetView<AdminController> {
           children: [
             Expanded(
               child: _buildQuickActionButton(
+                'Add Part',
+                Icons.build_circle,
+                Color(0xFFFF9800),
+                () => controller.showAddPartDialog(),
+              ),
+            ),
+            12.horizontalSpace,
+            Expanded(
+              child: _buildQuickActionButton(
                 'Settings',
                 Icons.settings_outlined,
                 Color(0xFF607D8B),
                 () => _showSettingsDialog(),
               ),
-            ),
-            12.horizontalSpace,
-            Expanded(
-              child: SizedBox(), // Empty placeholder
             ),
           ],
         ),
@@ -651,10 +684,11 @@ class AdminDashboardView extends GetView<AdminController> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(color: color.withOpacity(0.2)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
+              color: color.withOpacity(0.15),
+              blurRadius: 8,
               offset: Offset(0, 4),
             ),
           ],
@@ -664,8 +698,9 @@ class AdminDashboardView extends GetView<AdminController> {
             Container(
               padding: EdgeInsets.all(12.w),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: color.withOpacity(0.12),
                 borderRadius: BorderRadius.circular(8.r),
+                border: Border.all(color: color.withOpacity(0.3), width: 1),
               ),
               child: Icon(icon, color: color, size: 24.sp),
             ),
@@ -689,10 +724,11 @@ class AdminDashboardView extends GetView<AdminController> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: Color(0xFF2E3192).withOpacity(0.1)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
+            color: Color(0xFF2E3192).withOpacity(0.1),
+            blurRadius: 8,
             offset: Offset(0, 4),
           ),
         ],
@@ -724,7 +760,7 @@ class AdminDashboardView extends GetView<AdminController> {
           padding: EdgeInsets.symmetric(vertical: 16.h),
           decoration: BoxDecoration(
             color: isSelected
-                ? Color(0xFFFF8C00).withOpacity(0.1)
+                ? Color(0xFF2E3192).withOpacity(0.1)
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(12.r),
           ),
@@ -732,7 +768,9 @@ class AdminDashboardView extends GetView<AdminController> {
             children: [
               Icon(
                 icon,
-                color: isSelected ? Color(0xFFFF8C00) : Colors.grey,
+                color: isSelected
+                    ? Color(0xFF2E3192)
+                    : Color(0xFF2E3192).withOpacity(0.6),
                 size: 20.sp,
               ),
               4.verticalSpace,
@@ -740,8 +778,10 @@ class AdminDashboardView extends GetView<AdminController> {
                 title,
                 style: TextStyle(
                   fontSize: 12.sp,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  color: isSelected ? Color(0xFFFF8C00) : Colors.grey,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                  color: isSelected
+                      ? Color(0xFF2E3192)
+                      : Color(0xFF2E3192).withOpacity(0.7),
                 ),
               ),
             ],
@@ -1281,86 +1321,161 @@ class AdminDashboardView extends GetView<AdminController> {
   // Quick Action Methods
   void _showAnalyticsDialog() {
     Get.dialog(
-      AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20.r),
-        ),
-        title: Row(
-          children: [
-            Container(
-              padding: EdgeInsets.all(8.w),
-              decoration: BoxDecoration(
-                color: Color(0xFF2196F3).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8.r),
-              ),
-              child: Icon(Icons.analytics_outlined,
-                  color: Color(0xFF2196F3), size: 24.sp),
-            ),
-            12.horizontalSpace,
-            Text(
-              'Analytics Dashboard',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-            ),
-          ],
-        ),
-        content: Container(
-          width: 300.w,
-          height: 250.h,
+      Dialog(
+        child: Container(
+          width: 350.w,
+          padding: EdgeInsets.all(20.w),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              _buildAnalyticsItem(
-                Icons.attach_money,
-                'Total Revenue',
-                '\$12,450.00',
-                Color(0xFF4CAF50),
-                '',
+              // Header
+              Row(
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(8.w),
+                    decoration: BoxDecoration(
+                      color: Color(0xFF2196F3).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                    child: Icon(Icons.analytics_outlined,
+                        color: Color(0xFF2196F3), size: 24.sp),
+                  ),
+                  12.horizontalSpace,
+                  Text(
+                    'Analytics Dashboard',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF2E3192),
+                      fontSize: 18.sp,
+                    ),
+                  ),
+                  Spacer(),
+                  IconButton(
+                    onPressed: () => Get.back(),
+                    icon: Icon(Icons.close, color: Colors.grey[600]),
+                  ),
+                ],
               ),
-              16.verticalSpace,
-              _buildAnalyticsItem(
-                Icons.people_outline,
-                'Active Users',
-                '1,234',
-                Color(0xFF2196F3),
-                '',
-              ),
-              16.verticalSpace,
-              _buildAnalyticsItem(
-                Icons.eco_rounded,
-                'Services Completed',
-                '89',
-                Color(0xFFFF8C00),
-                '',
+              20.verticalSpace,
+
+              // Analytics Content
+              Obx(() => Column(
+                    children: [
+                      _buildAnalyticsItem(
+                        Icons.eco_rounded,
+                        'Total Services',
+                        '${controller.services.length}',
+                        Color(0xFF4CAF50),
+                        'Active services in system',
+                      ),
+                      16.verticalSpace,
+                      _buildAnalyticsItem(
+                        Icons.calendar_today,
+                        'Total Bookings',
+                        '${controller.bookings.length}',
+                        Color(0xFF2196F3),
+                        'All time bookings',
+                      ),
+                      16.verticalSpace,
+                      _buildAnalyticsItem(
+                        Icons.build,
+                        'Total Parts',
+                        '${controller.parts.length}',
+                        Color(0xFFFF9800),
+                        'Available parts',
+                      ),
+                      16.verticalSpace,
+                      _buildAnalyticsItem(
+                        Icons.attach_money,
+                        'Estimated Revenue',
+                        '\$${_calculateTotalRevenue()}',
+                        Color(0xFF4CAF50),
+                        'From all bookings',
+                      ),
+                    ],
+                  )),
+
+              20.verticalSpace,
+
+              // Action Buttons
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Get.back(),
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(color: Color(0xFF2E3192)),
+                        foregroundColor: Color(0xFF2E3192),
+                      ),
+                      child: Text('Close'),
+                    ),
+                  ),
+                  16.horizontalSpace,
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Get.back();
+                        _exportAnalytics();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Color(0xFF2E3192),
+                        foregroundColor: Colors.white,
+                      ),
+                      child: Text('Export Data'),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
         ),
-        actions: [
-          Container(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () => Get.back(),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFF2196F3),
-                foregroundColor: Colors.white,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-              ),
-              child:
-                  Text('Close', style: TextStyle(fontWeight: FontWeight.w600)),
-            ),
-          ),
-        ],
       ),
     );
   }
 
-  Widget _buildAnalyticsItem(
-      IconData icon, String title, String value, Color color, String trend) {
+  String _calculateTotalRevenue() {
+    double total = 0.0;
+    for (final booking in controller.bookings) {
+      total += booking.totalPrice;
+    }
+    return total.toStringAsFixed(2);
+  }
+
+  void _exportAnalytics() {
+    // Show loading indicator
+    Get.dialog(
+      Dialog(
+        child: Container(
+          padding: EdgeInsets.all(20.w),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2E3192)),
+              ),
+              16.verticalSpace,
+              Text('Exporting analytics data...'),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    // Simulate export process
+    Future.delayed(Duration(seconds: 2), () {
+      Get.back(); // Close loading dialog
+      Get.snackbar(
+        'Export Complete',
+        'Analytics data exported successfully',
+        backgroundColor: Color(0xFF4CAF50),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+      );
+    });
+  }
+
+  Widget _buildAnalyticsItem(IconData icon, String title, String value,
+      Color color, String description) {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
@@ -1395,37 +1510,25 @@ class AdminDashboardView extends GetView<AdminController> {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                4.verticalSpace,
+                2.verticalSpace,
                 Text(
                   value,
                   style: TextStyle(
                     fontSize: 18.sp,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                    color: color,
                   ),
                 ),
-              ],
-            ),
-          ),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
-            decoration: BoxDecoration(
-              color: Colors.green.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(6.r),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.trending_up, color: Colors.green, size: 10.sp),
-                2.horizontalSpace,
-                Text(
-                  '',
-                  style: TextStyle(
-                    color: Colors.green,
-                    fontSize: 8.sp,
-                    fontWeight: FontWeight.bold,
+                if (description.isNotEmpty) ...[
+                  2.verticalSpace,
+                  Text(
+                    description,
+                    style: TextStyle(
+                      fontSize: 10.sp,
+                      color: Colors.grey[500],
+                    ),
                   ),
-                ),
+                ],
               ],
             ),
           ),

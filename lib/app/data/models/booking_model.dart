@@ -39,26 +39,50 @@ class BookingModel {
   });
 
   factory BookingModel.fromJson(Map<String, dynamic> json) {
+    // Helper function to parse date from either timestamp or string
+    DateTime parseDate(dynamic value) {
+      if (value is DateTime) return value;
+      if (value is num) {
+        return DateTime.fromMillisecondsSinceEpoch(value.toInt());
+      }
+      if (value is String) {
+        try {
+          // Try parsing as ISO string first
+          return DateTime.parse(value);
+        } catch (e) {
+          try {
+            // Try parsing as timestamp string
+            final timestamp = int.parse(value);
+            return DateTime.fromMillisecondsSinceEpoch(timestamp);
+          } catch (e2) {
+            // Fallback to current time if parsing fails
+            return DateTime.now();
+          }
+        }
+      }
+      return DateTime.now(); // Fallback
+    }
+
     return BookingModel(
-      id: json['id'] ?? '',
-      customerId: json['customerId'] ?? '',
-      customerName: json['customerName'] ?? '',
-      serviceId: json['serviceId'] ?? '',
-      serviceName: json['serviceName'] ?? '',
-      technicianId: json['technicianId'],
-      technicianName: json['technicianName'],
-      bookingDate: DateTime.parse(json['bookingDate']),
-      serviceDate: DateTime.parse(json['serviceDate']),
-      status: json['status'] ?? 'pending',
-      totalPrice: (json['totalPrice'] ?? 0).toDouble(),
-      address: json['address'] ?? '',
-      notes: json['notes'],
+      id: json['id']?.toString() ?? '',
+      customerId: json['customerId']?.toString() ?? '',
+      customerName: json['customerName']?.toString() ?? '',
+      serviceId: json['serviceId']?.toString() ?? '',
+      serviceName: json['serviceName']?.toString() ?? '',
+      technicianId: json['technicianId']?.toString(),
+      technicianName: json['technicianName']?.toString(),
+      bookingDate: parseDate(json['bookingDate']),
+      serviceDate: parseDate(json['serviceDate']),
+      status: json['status']?.toString() ?? 'pending',
+      totalPrice: (json['totalPrice'] as num?)?.toDouble() ?? 0.0,
+      address: json['address']?.toString() ?? '',
+      notes: json['notes']?.toString(),
       selectedParts: (json['selectedParts'] as List?)
-              ?.map((e) => PartModel.fromJson(e))
+              ?.map((e) => PartModel.fromJson(Map<String, dynamic>.from(e)))
               .toList() ??
           [],
-      rating: json['rating'],
-      review: json['review'],
+      rating: json['rating']?.toString(),
+      review: json['review']?.toString(),
     );
   }
 

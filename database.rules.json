@@ -1,0 +1,41 @@
+{
+  "rules": {
+    ".read": "auth != null",
+    ".write": "auth != null",
+    "services": {
+      ".indexOn": ["createdAt", "name", "category", "isActive"],
+      "$serviceId": {
+        ".read": "auth != null",
+        ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'"
+      }
+    },
+    "bookings": {
+      ".indexOn": ["customerId", "technicianId", "bookingDate", "status", "createdAt"],
+      "$bookingId": {
+        ".read": "auth != null && (data.child('customerId').val() === auth.uid || data.child('technicianId').val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'admin')",
+        ".write": "auth != null && (data.child('customerId').val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'admin')"
+      }
+    },
+    "parts": {
+      ".indexOn": ["createdAt", "name"],
+      "$partId": {
+        ".read": "auth != null",
+        ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'"
+      }
+    },
+    "payments": {
+      ".indexOn": ["userId", "technicianId", "status", "createdAt"],
+      "$paymentId": {
+        ".read": "auth != null && (data.child('userId').val() === auth.uid || data.child('technicianId').val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'admin')",
+        ".write": "auth != null && (data.child('userId').val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'admin')"
+      }
+    },
+    "users": {
+      ".indexOn": ["email", "role", "createdAt"],
+      "$userId": {
+        ".read": "auth != null && (data.child('userId').val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'admin')",
+        ".write": "auth != null && (data.child('userId').val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'admin')"
+      }
+    }
+  }
+}
