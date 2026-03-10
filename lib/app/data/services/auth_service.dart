@@ -1,18 +1,19 @@
+import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:get/get.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:get/get.dart';
 import '../models/user_model.dart';
+import 'firebase_manager.dart';
 import '../../routes/app_pages.dart';
 
 class AuthService extends GetxService {
   static AuthService get to => Get.find();
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseDatabase _database = FirebaseDatabase.instance;
+  final FirebaseDatabase _database = FirebaseManager.to.database;
   GoogleSignIn? _googleSignIn;
 
   final Rx<User?> _firebaseUser = Rx<User?>(null);
@@ -382,20 +383,25 @@ class AuthService extends GetxService {
         snackPosition: SnackPosition.BOTTOM,
       );
       return false;
-    } on PlatformException catch (e) {
-      print('Platform Exception Code: ${e.code}');
-      print('Platform Exception Message: ${e.message}');
-      print('Platform Exception Details: $e');
+    } catch (e) {
+      print('Exception: $e');
 
       String message = 'Google Sign-In failed';
-      if (e.code == 'sign_in_failed') {
-        message = 'Google Sign-In failed. Please try again.';
-      } else if (e.code == 'network_error') {
-        message = 'Network error. Please check your internet connection.';
-      } else if (e.code == 'sign_in_canceled') {
-        message = 'Sign-In was cancelled.';
+
+      // Handle PlatformException (for Google Sign-In specific errors)
+      if (e is PlatformException) {
+        if (e.code == 'sign_in_failed') {
+          message = 'Google Sign-In failed. Please try again.';
+        } else if (e.code == 'network_error') {
+          message = 'Network error. Please check your internet connection.';
+        } else if (e.code == 'sign_in_canceled') {
+          message = 'Sign-In was cancelled.';
+        } else {
+          message = 'Platform error: ${e.code} - ${e.message}';
+        }
       } else {
-        message = 'Platform error: ${e.code} - ${e.message}';
+        // Handle other generic exceptions
+        message = 'An unexpected error occurred: $e';
       }
 
       Get.snackbar(
@@ -430,15 +436,15 @@ class AuthService extends GetxService {
       AlertDialog(
         title: Text('Complete Your Profile'),
         content: Container(
-          width: 300.w,
+          width: 300,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
                 'Please provide a few more details to complete your profile',
-                style: TextStyle(fontSize: 14.sp, color: Colors.grey[600]),
+                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
               ),
-              16.verticalSpace,
+              const SizedBox(height: 16),
               TextField(
                 controller: nameController,
                 decoration: InputDecoration(
@@ -447,7 +453,7 @@ class AuthService extends GetxService {
                   prefixIcon: Icon(Icons.person),
                 ),
               ),
-              12.verticalSpace,
+              const SizedBox(height: 12),
               TextField(
                 controller: phoneController,
                 decoration: InputDecoration(
@@ -457,7 +463,7 @@ class AuthService extends GetxService {
                 ),
                 keyboardType: TextInputType.phone,
               ),
-              12.verticalSpace,
+              const SizedBox(height: 12),
               DropdownButtonFormField<String>(
                 value: 'customer',
                 decoration: InputDecoration(
@@ -467,7 +473,6 @@ class AuthService extends GetxService {
                 ),
                 items: [
                   DropdownMenuItem(value: 'customer', child: Text('Customer')),
-                  DropdownMenuItem(value: 'admin', child: Text('Admin')),
                 ],
                 onChanged: (value) {
                   roleController.text = value ?? 'customer';

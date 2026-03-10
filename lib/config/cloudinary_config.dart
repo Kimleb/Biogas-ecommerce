@@ -21,8 +21,5 @@ class CloudinaryConfig {
 
   // Helper method to validate configuration
   static bool get isValidConfig =>
-      cloudName != 'dn1nx5buv' &&
-      uploadPreset != 'biogas_app' &&
-      cloudName.isNotEmpty &&
-      uploadPreset.isNotEmpty;
+      cloudName.isNotEmpty && uploadPreset.isNotEmpty;
 }

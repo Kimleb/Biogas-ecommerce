@@ -6,10 +6,9 @@ import '../controllers/admin_controller.dart';
 class AdminBinding extends Bindings {
   @override
   void dependencies() {
-    // Ensure DatabaseService is available
-    if (!Get.isRegistered<DatabaseService>()) {
-      Get.put<DatabaseService>(DatabaseService());
-    }
+    // DatabaseService is already created in main.dart
+    // Just use the existing instance
+    Get.find<DatabaseService>();
 
     Get.lazyPut<AdminController>(
       () => AdminController(),

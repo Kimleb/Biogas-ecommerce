@@ -3,7 +3,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../../../components/custom_button.dart';
-import '../../../routes/app_pages.dart';
 import '../controllers/category_controller.dart';
 
 // Extension for string capitalization
@@ -34,10 +33,19 @@ class CategoryView extends GetView<CategoryController> {
         backgroundColor: theme.scaffoldBackgroundColor,
         leading: controller.selectedCategory.value.isNotEmpty
             ? IconButton(
-                onPressed: () => controller.selectedCategory.value = '',
+                onPressed: () {
+                  if (controller.selectedCategory.value.isNotEmpty) {
+                    controller.selectedCategory.value = '';
+                  } else {
+                    Get.back();
+                  }
+                },
                 icon: Icon(Icons.arrow_back),
               )
-            : null,
+            : IconButton(
+                onPressed: () => Get.back(),
+                icon: Icon(Icons.arrow_back),
+              ),
         actions: controller.selectedCategory.value.isNotEmpty
             ? [
                 IconButton(
@@ -287,7 +295,10 @@ class CategoryView extends GetView<CategoryController> {
       child: InkWell(
         borderRadius: BorderRadius.circular(12.r),
         onTap: () {
-          Get.toNamed(Routes.BOOKING, arguments: service);
+          print('CategoryView: Tapping on service: ${service.name}');
+          print('CategoryView: Service data: $service');
+          print('CategoryView: Service ID: ${service.id}');
+          Get.toNamed('/booking', arguments: service);
         },
         child: Padding(
           padding: EdgeInsets.all(16.w),
@@ -344,7 +355,7 @@ class CategoryView extends GetView<CategoryController> {
                       children: [
                         // Price
                         Text(
-                          '\$${service.price?.toStringAsFixed(2) ?? '0.00'}',
+                          'KES ${service.price?.toStringAsFixed(2) ?? '0.00'}',
                           style: theme.textTheme.titleSmall?.copyWith(
                             color: theme.primaryColor,
                             fontWeight: FontWeight.bold,

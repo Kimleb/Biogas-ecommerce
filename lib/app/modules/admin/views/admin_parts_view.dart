@@ -3,7 +3,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../controllers/admin_controller.dart';
-import '../../../routes/app_pages.dart';
 
 class AdminPartsView extends GetView<AdminController> {
   const AdminPartsView({Key? key}) : super(key: key);
@@ -29,7 +28,7 @@ class AdminPartsView extends GetView<AdminController> {
           icon: const Icon(Icons.arrow_back, color: Colors.white),
         ),
       ),
-      body: SingleChildScrollView(child: Obx(() {
+      body: Obx(() {
         if (controller.parts.isEmpty) {
           return Center(
             child: Column(
@@ -58,9 +57,12 @@ class AdminPartsView extends GetView<AdminController> {
             final part = controller.parts[index];
             return Card(
               margin: EdgeInsets.only(bottom: 12.h),
-              elevation: 4,
+              elevation: 6,
+              shadowColor: const Color(0xFF2E3192).withOpacity(0.2),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12.r),
+                side:
+                    BorderSide(color: const Color(0xFF2E3192).withOpacity(0.1)),
               ),
               child: ListTile(
                 contentPadding: EdgeInsets.all(16.w),
@@ -93,6 +95,7 @@ class AdminPartsView extends GetView<AdminController> {
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16.sp,
+                    color: Colors.black87,
                   ),
                 ),
                 subtitle: Padding(
@@ -175,11 +178,9 @@ class AdminPartsView extends GetView<AdminController> {
             );
           },
         );
-      })),
+      }),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          Get.toNamed(Routes.ADMIN_DASHBOARD, arguments: {'tab': 2});
-        },
+        onPressed: () => controller.showAddPartDialog(),
         backgroundColor: const Color(0xFFFF8C00),
         icon: const Icon(Icons.add, color: Colors.white),
         label: const Text('Add Part', style: TextStyle(color: Colors.white)),

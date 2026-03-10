@@ -23,7 +23,7 @@ dependencies:
   firebase_database: ^10.4.0
   cloudinary: ^1.2.0
   cloudinary_url_gen: ^1.8.0
-  http: ^1.1.0
+  http: ^1.6.0
   image_picker: ^1.0.4
   cached_network_image: ^3.3.0
   flutter_cache_manager: ^3.3.1
