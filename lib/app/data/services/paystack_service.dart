@@ -14,9 +14,9 @@ class PaystackService extends GetxService {
 
   // Paystack configuration
   static const String _publicKey =
-      'pk_test_your_public_key_here'; // Replace with your public key
+      'pk_test_bd3d18cb55e7eee0a876a5d4d46a05940785f756'; // Replace with your public key
   static const String _secretKey =
-      'sk_test_your_secret_key_here'; // Replace with your secret key
+      'sk_test_c6cf2ac689d6a1455342e00e8e077508cf2ad04f'; // Replace with your secret key
 
   // Firebase Realtime Database references
   final FirebaseDatabase _database = FirebaseDatabase.instance;
@@ -470,7 +470,9 @@ class PaystackService extends GetxService {
   // Private helper methods
 
   String generatePaymentId() {
-    return 'pay_${DateTime.now().millisecondsSinceEpoch}_${DateTime.now().microsecond.toString().substring(0, 8)}';
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final random = Random().nextInt(99999).toString().padLeft(5, '0');
+    return 'pay_${timestamp}_$random';
   }
 
   Future<void> _savePaymentToDatabase(PaymentModel payment) async {

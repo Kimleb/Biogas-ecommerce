@@ -115,9 +115,10 @@ class PaymentSuccessView extends StatelessWidget {
               Expanded(
                 flex: 4,
                 child: Container(
-                  padding: EdgeInsets.all(24.w),
+                  padding: EdgeInsets.all(20.w),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       // Service Info
                       Container(
@@ -164,7 +165,7 @@ class PaymentSuccessView extends StatelessWidget {
                           ],
                         ),
                       ),
-                      24.verticalSpace,
+                      16.verticalSpace,
 
                       // Amount Details
                       Text(
@@ -175,7 +176,7 @@ class PaymentSuccessView extends StatelessWidget {
                           color: Colors.black,
                         ),
                       ),
-                      16.verticalSpace,
+                      12.verticalSpace,
                       Container(
                         padding: EdgeInsets.all(16.w),
                         decoration: BoxDecoration(
@@ -200,10 +201,9 @@ class PaymentSuccessView extends StatelessWidget {
                           ],
                         ),
                       ),
-                      24.verticalSpace,
+                      16.verticalSpace,
 
                       // Action Buttons
-                      Spacer(),
                       Row(
                         children: [
                           Expanded(
