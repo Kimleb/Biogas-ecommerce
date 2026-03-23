@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import '../../../../utils/constants.dart';
-import '../../../components/dark_transition.dart';
+import '../../../data/models/receipt_model.dart';
+import '../../../data/models/booking_model.dart';
+import '../../../data/models/payment_model.dart';
+import '../../../data/services/receipt_service.dart';
+import '../../../data/services/mpesa_service.dart';
+import '../../../data/services/auth_service.dart';
 import '../../../routes/app_pages.dart';
 
 // Extension for spacing
@@ -43,14 +47,11 @@ class PaymentSuccessView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DarkTransition(
-      offset: Offset(0, -context.height),
-      isDark: false,
-      builder: (context, _) => Scaffold(
-        backgroundColor: Colors.white,
-        body: SafeArea(
-          child: Column(
-            children: [
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Column(
+          children: [
               // Success Header
               Expanded(
                 flex: 3,
@@ -229,14 +230,75 @@ class PaymentSuccessView extends StatelessWidget {
                           12.horizontalSpace,
                           Expanded(
                             child: ElevatedButton(
-                              onPressed: () {
-                                // Navigate to booking details or receipt
-                                Get.snackbar(
-                                  'Receipt',
-                                  'Receipt download feature coming soon!',
-                                  backgroundColor: Color(0xFF4CAF50),
-                                  colorText: Colors.white,
-                                );
+                              onPressed: () async {
+                                try {
+                                  // Get current payment from MpesaService
+                                  final payment =
+                                      MpesaService.to.currentPayment.value;
+                                  if (payment == null) {
+                                    Get.snackbar(
+                                      'Error',
+                                      'Payment information not found',
+                                      backgroundColor: Colors.red,
+                                      colorText: Colors.white,
+                                    );
+                                    return;
+                                  }
+
+                                  // Get user information
+                                  final user = AuthService.to.currentUser;
+                                  final customerName = user?.name ?? 'Customer';
+                                  final customerEmail =
+                                      user?.email ?? 'customer@example.com';
+                                  final customerPhone =
+                                      user?.phone ?? '+254712345678';
+
+                                  // Create a booking object for receipt generation
+                                  final booking = BookingModel(
+                                    id: payment.bookingId,
+                                    customerId: payment.userId,
+                                    customerName: customerName,
+                                    serviceId: 'service_id',
+                                    serviceName: serviceName,
+                                    technicianId: null,
+                                    bookingDate: payment.createdAt,
+                                    serviceDate: payment.createdAt,
+                                    status: 'confirmed',
+                                    totalPrice: payment.amount,
+                                    address: 'Service Address',
+                                    selectedParts: const [],
+                                  );
+
+                                  // Generate receipt
+                                  final receipt =
+                                      await ReceiptService.to.generateReceipt(
+                                    payment: payment,
+                                    booking: booking,
+                                    customerName: customerName,
+                                    customerEmail: customerEmail,
+                                    customerPhone: customerPhone,
+                                  );
+
+                                  if (receipt != null) {
+                                    // Navigate to receipt view
+                                    Get.toNamed(Routes.RECEIPT,
+                                        arguments: receipt);
+                                  } else {
+                                    Get.snackbar(
+                                      'Error',
+                                      'Failed to generate receipt',
+                                      backgroundColor: Colors.red,
+                                      colorText: Colors.white,
+                                    );
+                                  }
+                                } catch (e) {
+                                  Get.snackbar(
+                                    'Error',
+                                    'Failed to generate receipt: ${e.toString()}',
+                                    backgroundColor: Colors.red,
+                                    colorText: Colors.white,
+                                  );
+                                }
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Color(0xFF4CAF50),

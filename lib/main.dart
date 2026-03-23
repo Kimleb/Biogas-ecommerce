@@ -8,7 +8,7 @@ import 'app/data/services/auth_service.dart';
 import 'app/data/services/cloudinary_service.dart';
 import 'app/data/services/database_service.dart';
 import 'app/data/services/firebase_manager.dart';
-import 'app/data/services/paystack_service.dart';
+import 'app/data/services/mpesa_service.dart';
 import 'app/routes/app_pages.dart';
 import 'config/cloudinary_config.dart';
 import 'config/theme/my_theme.dart';
@@ -30,8 +30,8 @@ Future<void> main() async {
   // Initialize Firebase manager first (required by AuthService)
   Get.put(FirebaseManager());
 
-  // Initialize Paystack service
-  Get.put(PaystackService());
+  // Initialize M-Pesa service
+  Get.put(MpesaService());
 
   // Initialize services
   await Get.putAsync(() async => AuthService());

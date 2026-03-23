@@ -81,6 +81,18 @@ class PaystackService extends GetxService {
             'payment_type': paymentType.toString(),
           },
         );
+      } else if (paymentMethod == PaymentMethod.mobileMoney) {
+        response = await _initializeMobileMoneyPayment(
+          email: email,
+          amount: amount,
+          reference: payment.id,
+          phoneNumber: phoneNumber,
+          metadata: {
+            'booking_id': booking.id,
+            'service_name': booking.serviceName,
+            'payment_type': paymentType.toString(),
+          },
+        );
       } else {
         response = await _initializeTransaction(
           email: email,
@@ -176,10 +188,12 @@ class PaystackService extends GetxService {
     try {
       final url = Uri.parse('https://api.paystack.co/transaction/initialize');
 
-      // Add phone number to metadata for M-Pesa
+      // Add phone number and M-Pesa specific metadata
       final updatedMetadata = <String, dynamic>{
         'phone_number': phoneNumber,
         'payment_channel': 'mpesa',
+        'mobile_money': true,
+        'provider': 'mpesa',
         ...?metadata,
       };
 
@@ -195,6 +209,7 @@ class PaystackService extends GetxService {
           'reference': reference,
           'currency': PaystackConfig.currency,
           'metadata': updatedMetadata,
+          'channels': ['mobile_money'], // Specify mobile money channels
         }),
       );
 
@@ -202,13 +217,75 @@ class PaystackService extends GetxService {
         final data = json.decode(response.body);
         return data;
       } else {
+        final errorData = json.decode(response.body);
         return {
           'status': false,
-          'message': 'M-Pesa initialization failed: ${response.statusCode}',
+          'message':
+              'M-Pesa initialization failed: ${errorData['message'] ?? response.statusCode}',
         };
       }
     } catch (e) {
       return {'status': false, 'message': 'M-Pesa API error: ${e.toString()}'};
+    }
+  }
+
+  /// Initialize Mobile Money payment via Paystack
+  Future<Map<String, dynamic>> _initializeMobileMoneyPayment({
+    required String email,
+    required double amount,
+    required String reference,
+    required String? phoneNumber,
+    Map<String, dynamic>? metadata,
+  }) async {
+    if (phoneNumber == null || phoneNumber.isEmpty) {
+      throw PaymentException(
+          'Phone number is required for mobile money payments');
+    }
+
+    try {
+      final url = Uri.parse('https://api.paystack.co/transaction/initialize');
+
+      // Add phone number and mobile money specific metadata
+      final updatedMetadata = <String, dynamic>{
+        'phone_number': phoneNumber,
+        'payment_channel': 'mobile_money',
+        'mobile_money': true,
+        'provider': 'generic', // Generic mobile money provider
+        ...?metadata,
+      };
+
+      final response = await http.post(
+        url,
+        headers: {
+          'Authorization': 'Bearer $_secretKey',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({
+          'email': email,
+          'amount': (amount * 100).round(),
+          'reference': reference,
+          'currency': PaystackConfig.currency,
+          'metadata': updatedMetadata,
+          'channels': ['mobile_money'], // Specify mobile money channels
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return data;
+      } else {
+        final errorData = json.decode(response.body);
+        return {
+          'status': false,
+          'message':
+              'Mobile money initialization failed: ${errorData['message'] ?? response.statusCode}',
+        };
+      }
+    } catch (e) {
+      return {
+        'status': false,
+        'message': 'Mobile money API error: ${e.toString()}'
+      };
     }
   }
 

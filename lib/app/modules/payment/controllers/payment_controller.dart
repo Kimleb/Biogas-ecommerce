@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../data/services/paystack_service.dart';
-import '../../../data/services/auth_service.dart';
-import '../../../data/models/payment_model.dart';
+import 'dart:async';
 import '../../../data/models/booking_model.dart';
+import '../../../data/models/payment_model.dart';
+import '../../../data/services/mpesa_service.dart';
+import '../../../data/services/auth_service.dart';
 import '../../../routes/app_pages.dart';
 
 class PaymentController extends GetxController {
@@ -69,131 +70,140 @@ class PaymentController extends GetxController {
   }
 
   Future<void> processPayment() async {
-    if (selectedPaymentMethod.value == PaymentMethod.mpesa) {
-      if (phoneController.text.isEmpty) {
+    if (phoneController.text.trim().isEmpty) {
+      Get.snackbar(
+        'Error',
+        'Please enter your phone number',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    if (!MpesaService.to.validatePhoneNumber(phoneController.text)) {
+      Get.snackbar(
+        'Error',
+        'Please enter a valid Kenyan phone number',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    try {
+      isProcessing.value = true;
+      loadingMessage.value = 'Initiating M-Pesa payment...';
+
+      // Check backend health first
+      bool isBackendHealthy = await MpesaService.to.checkBackendHealth();
+      if (!isBackendHealthy) {
         Get.snackbar(
-          'Phone Number Required',
-          'Please enter your M-Pesa phone number',
+          'Service Unavailable',
+          'Payment service is currently unavailable. Please try again later.',
           backgroundColor: Colors.red,
           colorText: Colors.white,
         );
         return;
       }
 
-      await _processMpesaPayment();
-    } else {
-      await _processCardPayment();
-    }
-  }
-
-  Future<void> _processMpesaPayment() async {
-    try {
-      isProcessing.value = true;
-
-      final payment = await PaystackService.to.initializeServicePayment(
+      // Initiate payment via Django backend
+      final result = await MpesaService.to.initiatePayment(
         booking: booking,
-        email: userEmail,
-        amount: totalAmount,
-        paymentType: PaymentType.payNow,
-        paymentMethod: PaymentMethod.mpesa,
-        phoneNumber: phoneController.text,
+        customerPhone: phoneController.text.trim(),
+        customerEmail: 'customer@example.com', // Get from user data
+        customerName: booking.customerName,
+        customerId: booking.customerId,
       );
 
-      if (payment != null) {
-        final authUrl = PaystackService.to.getAuthorizationUrl(payment);
-        if (authUrl != null) {
-          // For now, simulate successful payment since we can't launch web view
-          // In a real app, you would launch a web view with the authUrl
-          await _simulatePaymentSuccess(payment.reference!);
-        } else {
-          Get.snackbar(
-            'Payment Error',
-            'No authorization URL received',
-            backgroundColor: Colors.red,
-            colorText: Colors.white,
-          );
-        }
+      if (result != null && result['success'] == true) {
+        loadingMessage.value = 'STK Push sent to your phone';
+
+        // Start monitoring payment status
+        _monitorPaymentStatus(result['checkout_request_id']);
+
+        Get.snackbar(
+          'Payment Initiated',
+          'M-Pesa STK Push sent to your phone. Please enter your PIN to complete payment.',
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+          duration: Duration(seconds: 5),
+        );
+      } else {
+        String errorMessage = result?['error'] ?? 'Payment initiation failed';
+        Get.snackbar(
+          'Payment Failed',
+          errorMessage,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
       }
     } catch (e) {
       Get.snackbar(
-        'Payment Failed',
-        e.toString(),
+        'Error',
+        'Payment processing failed: ${e.toString()}',
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
     } finally {
       isProcessing.value = false;
+      loadingMessage.value = '';
     }
   }
 
-  Future<void> _processCardPayment() async {
-    try {
-      isProcessing.value = true;
+  Future<void> _monitorPaymentStatus(String checkoutRequestId) async {
+    const maxAttempts = 20; // Check for up to 5 minutes (20 * 15 seconds)
+    int attempts = 0;
 
-      final payment = await PaystackService.to.initializeServicePayment(
-        booking: booking,
-        email: userEmail,
-        amount: totalAmount,
-        paymentType: PaymentType.payNow,
-        paymentMethod: PaymentMethod.card,
-      );
+    Timer.periodic(Duration(seconds: 15), (timer) async {
+      attempts++;
 
-      if (payment != null) {
-        final authUrl = PaystackService.to.getAuthorizationUrl(payment);
-        if (authUrl != null) {
-          // For now, simulate successful payment since we can't launch web view
-          // In a real app, you would launch a web view with the authUrl
-          await _simulatePaymentSuccess(payment.reference!);
-        } else {
-          Get.snackbar(
-            'Payment Error',
-            'No authorization URL received',
-            backgroundColor: Colors.red,
-            colorText: Colors.white,
-          );
+      try {
+        final result =
+            await MpesaService.to.checkPaymentStatus(checkoutRequestId);
+
+        if (result != null && result['success'] == true) {
+          String status = result['status'];
+
+          if (status == 'completed') {
+            timer.cancel();
+            final payment = MpesaService.to.currentPayment.value;
+            if (payment != null) {
+              await _handlePaymentSuccess(payment);
+            }
+          } else if (status == 'failed') {
+            timer.cancel();
+            Get.snackbar(
+              'Payment Failed',
+              'Payment was not completed. Please try again.',
+              backgroundColor: Colors.red,
+              colorText: Colors.white,
+            );
+            isProcessing.value = false;
+            loadingMessage.value = '';
+          }
         }
+      } catch (e) {
+        print('Error checking payment status: $e');
       }
-    } catch (e) {
-      Get.snackbar(
-        'Payment Failed',
-        e.toString(),
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-    } finally {
-      isProcessing.value = false;
-    }
-  }
 
-  Future<void> _simulatePaymentSuccess(String reference) async {
-    // Simulate payment processing delay
-    await Future.delayed(Duration(seconds: 2));
-
-    // For demo purposes, create a successful payment without actual verification
-    // since we're simulating the payment flow
-    final simulatedPayment = PaymentModel(
-      id: reference,
-      bookingId: booking.id,
-      userId: booking.customerId,
-      technicianId: booking.technicianId,
-      amount: totalAmount,
-      currency: 'KES',
-      paymentType: PaymentType.payNow,
-      status: PaymentStatus.completed,
-      createdAt: DateTime.now(),
-      paidAt: DateTime.now(),
-      description: 'Payment for ${booking.serviceName}',
-      reference: reference,
-    );
-
-    // Navigate to success page with simulated payment data
-    await _handlePaymentSuccess(simulatedPayment);
+      if (attempts >= maxAttempts) {
+        timer.cancel();
+        Get.snackbar(
+          'Payment Timeout',
+          'Payment verification timed out. The payment may still complete. Check your M-Pesa messages.',
+          backgroundColor: Colors.orange,
+          colorText: Colors.white,
+        );
+        isProcessing.value = false;
+        loadingMessage.value = '';
+      }
+    });
   }
 
   Future<void> _handlePaymentSuccess(PaymentModel payment) async {
     try {
-      // For simulated payments, skip verification and proceed directly
-      // For real payments, you would verify here
+      isProcessing.value = false;
+      loadingMessage.value = '';
 
       // Navigate to success page
       Get.toNamed(Routes.PAYMENT_SUCCESS, arguments: {

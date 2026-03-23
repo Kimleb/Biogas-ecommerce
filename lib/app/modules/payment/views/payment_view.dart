@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import '../../../data/models/payment_model.dart';
 import '../../../components/dark_transition.dart';
 import '../controllers/payment_controller.dart';
 
@@ -117,15 +116,8 @@ class PaymentView extends GetView<PaymentController> {
           _buildPaymentSummary(),
           24.verticalSpace,
 
-          // Payment Method Selection
-          _buildPaymentMethodSection(),
-          24.verticalSpace,
-
-          // M-Pesa Form (if selected)
-          Obx(() =>
-              controller.selectedPaymentMethod.value == PaymentMethod.mpesa
-                  ? _buildMpesaForm()
-                  : SizedBox.shrink()),
+          // M-Pesa Form (always shown)
+          _buildMpesaForm(),
           24.verticalSpace,
 
           // Payment Button
@@ -229,115 +221,6 @@ class PaymentView extends GetView<PaymentController> {
     );
   }
 
-  Widget _buildPaymentMethodSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Payment Method',
-          style: TextStyle(
-            fontSize: 18.sp,
-            fontWeight: FontWeight.w600,
-            color: Colors.black,
-          ),
-        ),
-        16.verticalSpace,
-        Row(
-          children: [
-            Expanded(
-              child: _buildPaymentMethodCard(
-                PaymentMethod.mpesa,
-                'M-Pesa',
-                '📱',
-                true,
-              ),
-            ),
-            12.horizontalSpace,
-            Expanded(
-              child: _buildPaymentMethodCard(
-                PaymentMethod.card,
-                'Card',
-                '💳',
-                false,
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPaymentMethodCard(
-    PaymentMethod method,
-    String title,
-    String emoji,
-    bool isSelected,
-  ) {
-    return Obx(() => GestureDetector(
-          onTap: () => controller.selectPaymentMethod(method),
-          child: Container(
-            padding: EdgeInsets.all(16.w),
-            decoration: BoxDecoration(
-              color: controller.selectedPaymentMethod.value == method
-                  ? Color(0xFFFF8C00).withOpacity(0.1)
-                  : Colors.white,
-              borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(
-                color: controller.selectedPaymentMethod.value == method
-                    ? Color(0xFFFF8C00)
-                    : Colors.grey[300]!,
-                width: 2,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 10,
-                  offset: Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Column(
-              children: [
-                Text(
-                  emoji,
-                  style: TextStyle(fontSize: 32.sp),
-                ),
-                8.verticalSpace,
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w600,
-                    color: controller.selectedPaymentMethod.value == method
-                        ? Color(0xFFFF8C00)
-                        : Colors.black87,
-                  ),
-                ),
-                if (controller.selectedPaymentMethod.value == method) ...[
-                  4.verticalSpace,
-                  Container(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
-                    decoration: BoxDecoration(
-                      color: Color(0xFFFF8C00),
-                      borderRadius: BorderRadius.circular(10.r),
-                    ),
-                    child: Text(
-                      'Selected',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 10.sp,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ));
-  }
-
   Widget _buildMpesaForm() {
     return Container(
       padding: EdgeInsets.all(20.w),
@@ -415,10 +298,33 @@ class PaymentView extends GetView<PaymentController> {
                 8.horizontalSpace,
                 Expanded(
                   child: Text(
-                    'You will receive an OTP on this number to complete the payment',
+                    'You will receive an M-Pesa STK Push prompt on this number to complete the payment',
                     style: TextStyle(
                       fontSize: 12.sp,
                       color: Color(0xFF4A90E2),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          12.verticalSpace,
+          Container(
+            padding: EdgeInsets.all(12.w),
+            decoration: BoxDecoration(
+              color: Color(0xFF28A745).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.security, size: 16.sp, color: Color(0xFF28A745)),
+                8.horizontalSpace,
+                Expanded(
+                  child: Text(
+                    'Payment is processed securely through Safaricom Daraja API',
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      color: Color(0xFF28A745),
                     ),
                   ),
                 ),
@@ -461,7 +367,9 @@ class PaymentView extends GetView<PaymentController> {
                   ),
                   12.horizontalSpace,
                   Text(
-                    'Processing...',
+                    controller.loadingMessage.value.isNotEmpty
+                        ? controller.loadingMessage.value
+                        : 'Processing M-Pesa payment...',
                     style: TextStyle(
                       fontSize: 16.sp,
                       fontWeight: FontWeight.w600,
@@ -472,10 +380,10 @@ class PaymentView extends GetView<PaymentController> {
             : Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.lock_outline, size: 20.sp),
+                  Icon(Icons.phone_android, size: 20.sp),
                   8.horizontalSpace,
                   Text(
-                    'Pay KES ${controller.totalAmount.toStringAsFixed(2)}',
+                    'Pay KES ${controller.totalAmount.toStringAsFixed(2)} with M-Pesa',
                     style: TextStyle(
                       fontSize: 16.sp,
                       fontWeight: FontWeight.w600,

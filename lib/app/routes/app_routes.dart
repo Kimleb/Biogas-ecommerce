@@ -23,6 +23,7 @@ abstract class Routes {
   static const ADMIN_PARTS = _Paths.ADMIN_PARTS;
   static const PAYMENT = _Paths.PAYMENT;
   static const PAYMENT_SUCCESS = _Paths.PAYMENT_SUCCESS;
+  static const RECEIPT = _Paths.RECEIPT;
 }
 
 abstract class _Paths {
@@ -47,4 +48,5 @@ abstract class _Paths {
   static const ADMIN_PARTS = '/admin/parts';
   static const PAYMENT = '/payment';
   static const PAYMENT_SUCCESS = '/payment/success';
+  static const RECEIPT = '/receipt';
 }

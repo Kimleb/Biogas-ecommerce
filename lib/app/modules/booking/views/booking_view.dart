@@ -388,98 +388,96 @@ class BookingView extends GetView<BookingController> {
                                 .firstWhereOrNull((p) => p.id == part.id);
 
                             return Container(
-                                margin: EdgeInsets.only(bottom: 12),
-                                padding: EdgeInsets.all(12),
-                                decoration: BoxDecoration(
+                              margin: EdgeInsets.only(bottom: 12),
+                              padding: EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? Color(0xFFFFF4E6)
+                                    : Colors.grey[50],
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
                                   color: isSelected
-                                      ? Color(0xFFFFF4E6)
-                                      : Colors.grey[50],
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                    color: isSelected
-                                        ? Color(0xFFFF8C00)
-                                        : Colors.grey[200]!,
-                                    width: isSelected ? 2 : 1,
-                                  ),
+                                      ? Color(0xFFFF8C00)
+                                      : Colors.grey[200]!,
+                                  width: isSelected ? 2 : 1,
                                 ),
-                                child: Flexible(
-                                  child: Row(
-                                    children: [
-                                      Checkbox(
-                                        value: isSelected,
-                                        onChanged: (value) =>
-                                            controller.togglePart(part),
-                                        activeColor: Color(0xFFFF8C00),
-                                      ),
-                                      SizedBox(width: 12),
-                                      SizedBox(
-                                        width: 200,
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              part.name,
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.w600,
-                                                color: Colors.black,
-                                              ),
-                                            ),
-                                            SizedBox(height: 4),
-                                            Text(
-                                              part.description,
-                                              style: TextStyle(
-                                                fontSize: 11,
-                                                color: Colors.grey[600],
-                                              ),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                            SizedBox(height: 4),
-                                            Text(
-                                              'KES ${part.price.toStringAsFixed(2)}',
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.bold,
-                                                color: Color(0xFFFF8C00),
-                                              ),
-                                            ),
-                                          ],
+                              ),
+                              child: Row(
+                                children: [
+                                  Checkbox(
+                                    value: isSelected,
+                                    onChanged: (value) =>
+                                        controller.togglePart(part),
+                                    activeColor: Color(0xFFFF8C00),
+                                  ),
+                                  SizedBox(width: 12),
+                                  SizedBox(
+                                    width: 200,
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          part.name,
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.black,
+                                          ),
                                         ),
-                                      ),
-                                      if (isSelected) ...[
-                                        SizedBox(width: 12),
-                                        Row(
-                                          children: [
-                                            IconButton(
-                                              icon: Icon(
-                                                  Icons.remove_circle_outline,
-                                                  size: 20),
-                                              onPressed: () {
-                                                if (selectedPart != null &&
-                                                    selectedPart.quantity > 1) {
-                                                  controller.updatePartQuantity(
-                                                      part.id,
-                                                      selectedPart.quantity -
-                                                          1);
-                                                }
-                                              },
-                                            ),
-                                            SizedBox(width: 8),
-                                            Text(
-                                              '${selectedPart?.quantity ?? 1}',
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                          ],
+                                        SizedBox(height: 4),
+                                        Text(
+                                          part.description,
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            color: Colors.grey[600],
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        SizedBox(height: 4),
+                                        Text(
+                                          'KES ${part.price.toStringAsFixed(2)}',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xFFFF8C00),
+                                          ),
                                         ),
                                       ],
-                                    ],
+                                    ),
                                   ),
-                                ));
+                                  if (isSelected) ...[
+                                    SizedBox(width: 12),
+                                    Row(
+                                      children: [
+                                        IconButton(
+                                          icon: Icon(
+                                              Icons.remove_circle_outline,
+                                              size: 20),
+                                          onPressed: () {
+                                            if (selectedPart != null &&
+                                                selectedPart.quantity > 1) {
+                                              controller.updatePartQuantity(
+                                                  part.id,
+                                                  selectedPart.quantity - 1);
+                                            }
+                                          },
+                                        ),
+                                        SizedBox(width: 8),
+                                        Text(
+                                          '${selectedPart?.quantity ?? 1}',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            );
                           });
                         },
                       ),
