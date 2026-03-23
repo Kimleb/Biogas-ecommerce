@@ -17,6 +17,7 @@ class PaymentModel {
   final Map<String, dynamic>? verificationData;
   final DateTime? refundedAt;
   final String? refundReason;
+  final PaymentMethod? paymentMethod;
 
   PaymentModel({
     required this.id,
@@ -36,6 +37,7 @@ class PaymentModel {
     this.verificationData,
     this.refundedAt,
     this.refundReason,
+    this.paymentMethod,
   });
 
   /// Create payment from JSON
@@ -60,6 +62,7 @@ class PaymentModel {
           ? DateTime.parse(json['refundedAt'])
           : null,
       refundReason: json['refundReason'],
+      paymentMethod: _parsePaymentMethod(json['paymentMethod']),
     );
   }
 
@@ -83,6 +86,7 @@ class PaymentModel {
       'verificationData': verificationData,
       'refundedAt': refundedAt?.toIso8601String(),
       'refundReason': refundReason,
+      'paymentMethod': paymentMethod?.toString(),
     };
   }
 
@@ -118,6 +122,24 @@ class PaymentModel {
     }
   }
 
+  /// Parse payment method from string
+  static PaymentMethod? _parsePaymentMethod(String? method) {
+    switch (method) {
+      case 'PaymentMethod.card':
+        return PaymentMethod.card;
+      case 'PaymentMethod.bankTransfer':
+        return PaymentMethod.bankTransfer;
+      case 'PaymentMethod.ussd':
+        return PaymentMethod.ussd;
+      case 'PaymentMethod.mpesa':
+        return PaymentMethod.mpesa;
+      case 'PaymentMethod.mobileMoney':
+        return PaymentMethod.mobileMoney;
+      default:
+        return null;
+    }
+  }
+
   /// Create a copy with updated fields
   PaymentModel copyWith({
     String? id,
@@ -137,6 +159,7 @@ class PaymentModel {
     Map<String, dynamic>? verificationData,
     DateTime? refundedAt,
     String? refundReason,
+    PaymentMethod? paymentMethod,
   }) {
     return PaymentModel(
       id: id ?? this.id,
@@ -156,6 +179,7 @@ class PaymentModel {
       verificationData: verificationData ?? this.verificationData,
       refundedAt: refundedAt ?? this.refundedAt,
       refundReason: refundReason ?? this.refundReason,
+      paymentMethod: paymentMethod ?? this.paymentMethod,
     );
   }
 
@@ -198,4 +222,5 @@ enum PaymentMethod {
   paystackBank,
   qrCode,
   mpesa,
+  mobileMoney,
 }
