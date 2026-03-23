@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import '../data/models/receipt_model.dart';
 
 import '../modules/admin/bindings/admin_binding.dart';
 import '../modules/admin/views/admin_bookings_view.dart';
@@ -35,6 +36,7 @@ import '../modules/welcome/views/welcome_view.dart';
 import '../modules/payment/bindings/payment_binding.dart';
 import '../modules/payment/views/payment_view.dart';
 import '../modules/payment/views/payment_success_view.dart';
+import '../modules/payment/views/receipt_view.dart';
 import '../middlewares/admin_middleware.dart';
 
 part 'app_routes.dart';
@@ -156,6 +158,12 @@ class AppPages {
       name: _Paths.PAYMENT_SUCCESS,
       page: () => PaymentSuccessView(),
       binding: PaymentBinding(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 250),
+    ),
+    GetPage(
+      name: _Paths.RECEIPT,
+      page: () => ReceiptView(receipt: Get.arguments as ReceiptModel),
       transition: Transition.rightToLeft,
       transitionDuration: const Duration(milliseconds: 250),
     ),
