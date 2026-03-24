@@ -2,14 +2,14 @@
 
 ## 1. Test Payment Initiation
 ```bash
-curl -X POST "https://eminently-rare-pegasus.ngrok-free.app/api/mpesa/initiate/" \
+curl -X POST "http://127.0.0.1:8000/api/mpesa/initiate/" \
   -H "Content-Type: application/json" \
   -d '{
     "booking_id": "test_booking_123",
     "customer_id": "customer_456",
     "customer_name": "John Doe",
     "customer_email": "john.doe@example.com",
-    "customer_phone": "+254712345678",
+    "customer_phone": "+254702502952",
     "service_name": "Biogas Installation",
     "amount": 2500.0,
     "service_fee": 2000.0,

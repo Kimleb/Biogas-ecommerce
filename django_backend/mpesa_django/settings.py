@@ -115,7 +115,7 @@ CORS_ALLOW_ALL_ORIGINS = DEBUG  # Only allow all origins in development
 
 # M-Pesa settings
 MPESA_SHORTCODE = os.getenv('MPESA_SHORTCODE', '174379')
-MPESA_PASSKEY = os.getenv('MPESA_PASSKEY', 'your_passkey')
-MPESA_CONSUMER_KEY = os.getenv('MPESA_CONSUMER_KEY', 'your_consumer_key')
-MPESA_CONSUMER_SECRET = os.getenv('MPESA_CONSUMER_SECRET', 'your_consumer_secret')
+MPESA_PASSKEY = os.getenv('MPESA_PASSKEY', '')
+MPESA_CONSUMER_KEY = os.getenv('MPESA_CONSUMER_KEY', 'pnMOaGGsCE2qYSRj9I2U01GoPoqMksmR')
+MPESA_CONSUMER_SECRET = os.getenv('MPESA_CONSUMER_SECRET', '1iLEfnZm2bm3FHt2')
 MPESA_CALLBACK_URL = os.getenv('MPESA_CALLBACK_URL', 'https://your-domain.com/api/mpesa/callback/')
