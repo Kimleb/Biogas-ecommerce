@@ -220,6 +220,7 @@ class ReceiptView extends StatelessWidget {
               ],
             ),
         ),
+    );
   }
 
   Widget _buildSectionCard({
