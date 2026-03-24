@@ -1,0 +1,71 @@
+# M-Pesa API Test Commands
+
+## 1. Test Payment Initiation
+```bash
+curl -X POST "https://eminently-rare-pegasus.ngrok-free.app/api/mpesa/initiate/" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "booking_id": "test_booking_123",
+    "customer_id": "customer_456",
+    "customer_name": "John Doe",
+    "customer_email": "john.doe@example.com",
+    "customer_phone": "+254712345678",
+    "service_name": "Biogas Installation",
+    "amount": 2500.0,
+    "service_fee": 2000.0,
+    "platform_fee": 500.0
+  }'
+```
+
+## 2. Test Payment Status Check
+```bash
+curl -X POST "https://eminently-rare-pegasus.ngrok-free.app/api/mpesa/status/" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "checkout_request_id": "ws_CO_1234567890"
+  }'
+```
+
+## 3. Test Backend Health Check
+```bash
+curl -X GET "https://eminently-rare-pegasus.ngrok-free.app/api/health/" \
+  -H "Content-Type: application/json"
+```
+
+## 4. Test Receipt Generation
+```bash
+curl -X POST "https://eminently-rare-pegasus.ngrok-free.app/api/receipts/" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "payment_id": "payment_123",
+    "booking_id": "booking_456",
+    "customer_id": "customer_789",
+    "customer_name": "John Doe",
+    "customer_email": "john.doe@example.com",
+    "customer_phone": "+254712345678",
+    "service_name": "Biogas Installation",
+    "amount": 2500.0,
+    "service_fee": 2000.0,
+    "platform_fee": 500.0,
+    "payment_method": "M-Pesa",
+    "status": "completed",
+    "created_at": "2024-03-23T10:00:00Z"
+  }'
+```
+
+## 5. Get Receipt by ID
+```bash
+curl -X GET "https://eminently-rare-pegasus.ngrok-free.app/api/receipts/receipt_123/" \
+  -H "Content-Type: application/json"
+```
+
+## 6. Get Customer Receipts
+```bash
+curl -X GET "https://eminently-rare-pegasus.ngrok-free.app/api/receipts/customer/customer_789/" \
+  -H "Content-Type: application/json"
+```
+
+## Quick Test Command (Copy and Paste)
+```bash
+curl -X POST "https://eminently-rare-pegasus.ngrok-free.app/api/mpesa/initiate/" -H "Content-Type: application/json" -d '{"booking_id": "test_booking_123", "customer_id": "customer_456", "customer_name": "John Doe", "customer_email": "john.doe@example.com", "customer_phone": "+254712345678", "service_name": "Biogas Installation", "amount": 2500.0, "service_fee": 2000.0, "platform_fee": 500.0}'
+```
