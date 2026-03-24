@@ -326,8 +326,6 @@ class PaymentSuccessView extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
   }
 
   Widget _buildDetailRow(String label, String value) {
