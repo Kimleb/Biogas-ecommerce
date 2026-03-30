@@ -12,7 +12,7 @@ class MpesaService extends GetxService {
 
   // Django backend URL
   static const String _baseUrl =
-      'https://eminently-rare-pegasus.ngrok-free.app/api';
+      'https://mobilemealscenter.pythonanywhere.com/api';
 
   // Reactive state
   final RxBool isProcessingPayment = false.obs;
