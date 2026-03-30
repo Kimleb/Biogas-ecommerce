@@ -313,104 +313,256 @@ class PaymentSuccessView extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: 16.sp,
                                 fontWeight: FontWeight.w600,
-                                color: Colors.white,
+                                color: Colors.black,
                               ),
                             ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                16.verticalSpace,
+
+                // Amount Details
+                Text(
+                  'Payment Details',
+                  style: TextStyle(
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black,
+                  ),
+                ),
+                12.verticalSpace,
+                Container(
+                  padding: EdgeInsets.all(16.w),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[50],
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  child: Column(
+                    children: [
+                      _buildDetailRow('Amount Paid',
+                          'KES ${amount.toStringAsFixed(2)}'),
+                      12.verticalSpace,
+                      _buildDetailRow('Payment Method', 'M-Pesa'),
+                      12.verticalSpace,
+                      _buildDetailRow('Status', 'Completed'),
+                      12.verticalSpace,
+                      Divider(height: 1.h, color: Colors.grey[300]),
+                      12.verticalSpace,
+                      _buildDetailRow(
+                        'Date & Time',
+                        DateTime.now().toString().substring(0, 19),
+                      ),
+                    ],
+                  ),
+                ),
+                16.verticalSpace,
+
+                // Action Buttons
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Get.offAllNamed(Routes.HOME),
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(color: Color(0xFF4CAF50)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.r),
+                          ),
+                          padding: EdgeInsets.symmetric(vertical: 16.h),
+                        ),
+                        child: Text(
+                          'Back to Home',
+                          style: TextStyle(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF4CAF50),
                           ),
                         ),
-                      ],
-                    ),
-                    16.verticalSpace,
-
-                    // Support Contact Section
-                    Container(
-                      width: double.infinity,
-                      padding: EdgeInsets.all(16.w),
-                      decoration: BoxDecoration(
-                        color: Color(0xFF4CAF50).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12.r),
-                        border: Border.all(
-                            color: Color(0xFF4CAF50).withOpacity(0.3)),
                       ),
-                      child: Column(
-                        children: [
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.support_agent,
-                                color: Color(0xFF4CAF50),
-                                size: 20.sp,
-                              ),
-                              8.horizontalSpace,
-                              Text(
-                                'Need Support?',
-                                style: TextStyle(
-                                  fontSize: 16.sp,
-                                  fontWeight: FontWeight.w600,
-                                  color: Color(0xFF4CAF50),
-                                ),
-                              ),
-                            ],
-                          ),
-                          8.verticalSpace,
-                          Text(
-                            'Call us for any assistance with your payment or service',
-                            style: TextStyle(
-                              fontSize: 12.sp,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                          12.verticalSpace,
-                          ElevatedButton.icon(
-                            onPressed: () async {
-                              const phoneNumber = '0708253778';
-                              final Uri phoneUri = Uri(
-                                scheme: 'tel',
-                                path: phoneNumber,
+                    ),
+                    12.horizontalSpace,
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          try {
+                            // Get current payment from MpesaService
+                            final payment =
+                                MpesaService.to.currentPayment.value;
+                            if (payment == null) {
+                              Get.snackbar(
+                                'Error',
+                                'Payment information not found',
+                                backgroundColor: Colors.red,
+                                colorText: Colors.white,
                               );
+                              return;
+                            }
 
-                              try {
-                                if (await canLaunchUrl(phoneUri)) {
-                                  await launchUrl(phoneUri);
-                                } else {
-                                  Get.snackbar(
-                                    'Error',
-                                    'Could not launch phone dialer',
-                                    backgroundColor: Colors.red,
-                                    colorText: Colors.white,
-                                  );
-                                }
-                              } catch (e) {
-                                Get.snackbar(
-                                  'Error',
-                                  'Failed to make call: ${e.toString()}',
-                                  backgroundColor: Colors.red,
-                                  colorText: Colors.white,
-                                );
-                              }
-                            },
-                            icon: Icon(Icons.call, size: 16.sp),
-                            label: Text('Call 0708253778'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Color(0xFF4CAF50),
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8.r),
-                              ),
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 16.w,
-                                vertical: 8.h,
-                              ),
-                            ),
+                            // Get user information
+                            final user = AuthService.to.currentUser;
+                            final customerName = user?.name ?? 'Customer';
+                            final customerEmail =
+                                user?.email ?? 'customer@example.com';
+                            final customerPhone =
+                                user?.phone ?? '+254712345678';
+
+                            // Create a booking object for receipt generation
+                            final booking = BookingModel(
+                              id: payment.bookingId,
+                              customerId: payment.userId,
+                              customerName: customerName,
+                              serviceId: 'service_id',
+                              serviceName: serviceName,
+                              technicianId: null,
+                              bookingDate: payment.createdAt,
+                              serviceDate: payment.createdAt,
+                              status: 'confirmed',
+                              totalPrice: payment.amount,
+                              address: 'Service Address',
+                              selectedParts: const [],
+                            );
+
+                            // Generate receipt
+                            final receipt =
+                                await ReceiptService.to.generateReceipt(
+                              payment: payment,
+                              booking: booking,
+                              customerName: customerName,
+                              customerEmail: customerEmail,
+                              customerPhone: customerPhone,
+                            );
+
+                            if (receipt != null) {
+                              // Navigate to receipt view
+                              Get.toNamed(Routes.RECEIPT,
+                                  arguments: receipt);
+                            } else {
+                              Get.snackbar(
+                                'Error',
+                                'Failed to generate receipt',
+                                backgroundColor: Colors.red,
+                                colorText: Colors.white,
+                              );
+                            }
+                          } catch (e) {
+                            Get.snackbar(
+                              'Error',
+                              'Failed to generate receipt: ${e.toString()}',
+                              backgroundColor: Colors.red,
+                              colorText: Colors.white,
+                            );
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Color(0xFF4CAF50),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.r),
                           ),
-                        ],
+                          padding: EdgeInsets.symmetric(vertical: 16.h),
+                        ),
+                        child: Text(
+                          'View Receipt',
+                          style: TextStyle(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
                       ),
                     ),
                   ],
                 ),
-              ),
+                16.verticalSpace,
+
+                // Support Contact Section
+                Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(16.w),
+                  decoration: BoxDecoration(
+                    color: Color(0xFF4CAF50).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12.r),
+                    border: Border.all(color: Color(0xFF4CAF50).withOpacity(0.3)),
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.support_agent,
+                            color: Color(0xFF4CAF50),
+                            size: 20.sp,
+                          ),
+                          8.horizontalSpace,
+                          Text(
+                            'Need Support?',
+                            style: TextStyle(
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF4CAF50),
+                            ),
+                          ),
+                        ],
+                      ),
+                      8.verticalSpace,
+                      Text(
+                        'Call us for any assistance with your payment or service',
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                      12.verticalSpace,
+                      ElevatedButton.icon(
+                        onPressed: () async {
+                          const phoneNumber = '0708253778';
+                          final Uri phoneUri = Uri(
+                            scheme: 'tel',
+                            path: phoneNumber,
+                          );
+                          
+                          try {
+                            if (await canLaunchUrl(phoneUri)) {
+                              await launchUrl(phoneUri);
+                            } else {
+                              Get.snackbar(
+                                'Error',
+                                'Could not launch phone dialer',
+                                backgroundColor: Colors.red,
+                                colorText: Colors.white,
+                              );
+                            }
+                          } catch (e) {
+                            Get.snackbar(
+                              'Error',
+                              'Failed to make call: ${e.toString()}',
+                              backgroundColor: Colors.red,
+                              colorText: Colors.white,
+                            );
+                          }
+                        },
+                        icon: Icon(Icons.call, size: 16.sp),
+                        label: Text('Call 0708253778'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Color(0xFF4CAF50),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8.r),
+                          ),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 16.w,
+                            vertical: 8.h,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

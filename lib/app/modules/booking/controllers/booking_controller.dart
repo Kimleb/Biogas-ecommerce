@@ -13,7 +13,6 @@ class BookingController extends GetxController {
   final selectedParts = <PartModel>[].obs;
   final RxList<PartModel> availableParts = <PartModel>[].obs;
   final selectedDate = Rx<DateTime?>(null);
-  final selectedTechnician = Rx<UserModel?>(null);
   final RxBool isLoadingParts = false.obs;
 
   final DatabaseService _databaseService = Get.find<DatabaseService>();
@@ -112,10 +111,6 @@ class BookingController extends GetxController {
     selectedDate.value = date;
   }
 
-  void selectTechnician(UserModel technician) {
-    selectedTechnician.value = technician;
-  }
-
   /// Method to manually set service (for debugging)
   void setService(ServiceModel newService) {
     service = newService;
@@ -147,8 +142,8 @@ class BookingController extends GetxController {
       customerName: currentUser.name,
       serviceId: service.id.toString(),
       serviceName: service.name,
-      technicianId: selectedTechnician.value?.id,
-      technicianName: selectedTechnician.value?.name,
+      technicianId: null,
+      technicianName: null,
       bookingDate: DateTime.now(),
       serviceDate: selectedDate.value!,
       status: 'pending',

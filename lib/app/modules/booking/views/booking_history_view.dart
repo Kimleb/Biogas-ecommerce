@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../data/models/booking_model.dart';
 import '../../../data/services/auth_service.dart';
@@ -198,6 +199,95 @@ class _BookingCard extends StatelessWidget {
                 ],
               ),
             ],
+            16.verticalSpace,
+
+            // Support Call Button
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.all(12.w),
+              decoration: BoxDecoration(
+                color: Color(0xFF4CAF50).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8.r),
+                border: Border.all(color: Color(0xFF4CAF50).withOpacity(0.3)),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.support_agent,
+                    color: Color(0xFF4CAF50),
+                    size: 16.sp,
+                  ),
+                  8.horizontalSpace,
+                  Expanded(
+                    child: Text(
+                      'Need support with this booking?',
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        color: Colors.grey[700],
+                      ),
+                    ),
+                  ),
+                  8.horizontalSpace,
+                  GestureDetector(
+                    onTap: () async {
+                      const phoneNumber = '0708253778';
+                      final Uri phoneUri = Uri(
+                        scheme: 'tel',
+                        path: phoneNumber,
+                      );
+
+                      try {
+                        if (await canLaunchUrl(phoneUri)) {
+                          await launchUrl(phoneUri);
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Could not launch phone dialer'),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content:
+                                Text('Failed to make call: ${e.toString()}'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                    },
+                    child: Container(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                      decoration: BoxDecoration(
+                        color: Color(0xFF4CAF50),
+                        borderRadius: BorderRadius.circular(6.r),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.call,
+                            color: Colors.white,
+                            size: 14.sp,
+                          ),
+                          4.horizontalSpace,
+                          Text(
+                            'Call 0708253778',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 11.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),
